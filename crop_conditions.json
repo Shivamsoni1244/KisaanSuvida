@@ -1,0 +1,112 @@
+{
+    "rice": {
+        "temp": [18.0, 38.0],
+        "humidity": [60.0, 95.0],
+        "rainfall": [100.0, 350.0]
+    },
+    "maize": {
+        "temp": [15.0, 35.0],
+        "humidity": [40.0, 85.0],
+        "rainfall": [40.0, 140.0]
+    },
+    "chickpea": {
+        "temp": [10.0, 30.0],
+        "humidity": [10.0, 50.0],
+        "rainfall": [30.0, 120.0]
+    },
+    "kidneybeans": {
+        "temp": [12.0, 30.0],
+        "humidity": [15.0, 60.0],
+        "rainfall": [40.0, 180.0]
+    },
+    "pigeonpeas": {
+        "temp": [15.0, 40.0],
+        "humidity": [20.0, 80.0],
+        "rainfall": [60.0, 250.0]
+    },
+    "mothbeans": {
+        "temp": [20.0, 42.0],
+        "humidity": [20.0, 75.0],
+        "rainfall": [15.0, 100.0]
+    },
+    "mungbean": {
+        "temp": [22.0, 38.0],
+        "humidity": [50.0, 95.0],
+        "rainfall": [20.0, 90.0]
+    },
+    "blackgram": {
+        "temp": [20.0, 40.0],
+        "humidity": [40.0, 90.0],
+        "rainfall": [40.0, 100.0]
+    },
+    "lentil": {
+        "temp": [12.0, 35.0],
+        "humidity": [35.0, 80.0],
+        "rainfall": [20.0, 80.0]
+    },
+    "pomegranate": {
+        "temp": [15.0, 38.0],
+        "humidity": [30.0, 75.0],
+        "rainfall": [40.0, 150.0]
+    },
+    "banana": {
+        "temp": [20.0, 38.0],
+        "humidity": [40.0, 95.0],
+        "rainfall": [60.0, 200.0]
+    },
+    "mango": {
+        "temp": [20.0, 45.0],
+        "humidity": [25.0, 75.0],
+        "rainfall": [50.0, 180.0]
+    },
+    "grapes": {
+        "temp": [10.0, 45.0],
+        "humidity": [30.0, 90.0],
+        "rainfall": [25.0, 120.0]
+    },
+    "watermelon": {
+        "temp": [20.0, 38.0],
+        "humidity": [30.0, 90.0],
+        "rainfall": [20.0, 100.0]
+    },
+    "muskmelon": {
+        "temp": [22.0, 40.0],
+        "humidity": [30.0, 90.0],
+        "rainfall": [10.0, 60.0]
+    },
+    "apple": {
+        "temp": [5.0, 30.0],
+        "humidity": [50.0, 90.0],
+        "rainfall": [60.0, 180.0]
+    },
+    "orange": {
+        "temp": [8.0, 38.0],
+        "humidity": [40.0, 90.0],
+        "rainfall": [60.0, 180.0]
+    },
+    "papaya": {
+        "temp": [18.0, 45.0],
+        "humidity": [40.0, 95.0],
+        "rainfall": [25.0, 300.0]
+    },
+    "coconut": {
+        "temp": [20.0, 38.0],
+        "humidity": [50.0, 100.0],
+        "rainfall": [80.0, 280.0]
+    },
+    "cotton": {
+        "temp": [18.0, 38.0],
+        "humidity": [35.0, 85.0],
+        "rainfall": [40.0, 130.0]
+    },
+    "jute": {
+        "temp": [18.0, 35.0],
+        "humidity": [50.0, 95.0],
+        "rainfall": [100.0, 250.0]
+    },
+    "coffee": {
+        "temp": [15.0, 32.0],
+        "humidity": [55.0, 95.0],
+        "rainfall": [80.0, 250.0]
+    }
+}

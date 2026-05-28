@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>{% if lang == 'hi' %}फसल सिफारिश{% else %}Crop Recommendation{% endif %}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Yatra+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green-deep: #1a4d2e;
+    --green-mid: #2e7d4f;
+    --green-bright: #4caf73;
+    --gold: #f5c842;
+    --cream: #fdf8f0;
+    --text-dark: #1a2e1a;
+    --border: #c8e6c9;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    min-height: 100vh;
+    background: #e8f5e9;
+    font-family: 'Nunito', sans-serif;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: flex-start;
+    padding: 28px 20px 90px;
+    position: relative; overflow-x: hidden;
+  }
+  .bg-pattern {
+    position: fixed; inset: 0; z-index: 0;
+    background:
+      radial-gradient(ellipse at 70% 20%, rgba(76,175,115,0.20) 0%, transparent 55%),
+      radial-gradient(ellipse at 30% 80%, rgba(245,200,66,0.10) 0%, transparent 55%),
+      linear-gradient(160deg, #c8e6c9 0%, #e8f5e9 50%, #f1f8e9 100%);
+  }
+  .nature-header {
+    position: fixed; top: 0; left: 0; right: 0; height: 6px;
+    background: linear-gradient(90deg, var(--green-mid), var(--green-bright), var(--gold), var(--green-bright), var(--green-mid));
+    z-index: 20;
+  }
+  .field-svg {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    z-index: 1; pointer-events: none;
+  }
+  .container { position: relative; z-index: 10; max-width: 500px; width: 100%; }
+
+  .top-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 22px;
+  }
+  .brand-pill {
+    display: flex; align-items: center; gap: 8px;
+    background: white; border: 1.5px solid var(--border); border-radius: 30px;
+    padding: 8px 16px; color: var(--green-deep);
+    font-family: 'Yatra One', cursive; font-size: 1rem;
+    box-shadow: 0 2px 12px rgba(46,125,79,0.12); text-decoration: none;
+  }
+  .back-btn {
+    display: flex; align-items: center; gap: 6px;
+    background: white; border: 1.5px solid var(--border); border-radius: 30px;
+    padding: 8px 16px; color: var(--green-mid); font-size: 0.88rem; font-weight: 800;
+    text-decoration: none; transition: 0.2s;
+    box-shadow: 0 2px 8px rgba(46,125,79,0.10);
+  }
+  .back-btn:hover { background: #edfbf1; border-color: var(--green-bright); }
+
+  /* ── Result hero ── */
+  .result-card {
+    background: white; border-radius: 28px; overflow: hidden;
+    box-shadow: 0 20px 60px rgba(46,125,79,0.18), 0 0 0 1.5px var(--border);
+    animation: riseIn 0.7s cubic-bezier(.16,1,.3,1) both;
+  }
+  @keyframes riseIn {
+    from { opacity:0; transform:translateY(30px) scale(0.96); }
+    to { opacity:1; transform:translateY(0) scale(1); }
+  }
+
+  .result-hero {
+    background: linear-gradient(135deg, var(--green-bright), var(--green-deep));
+    padding: 38px 30px 32px;
+    text-align: center; color: white;
+    position: relative; overflow: hidden;
+  }
+  .result-hero::before {
+    content: '';
+    position: absolute; top: -60px; right: -60px;
+    width: 200px; height: 200px;
+    background: rgba(255,255,255,0.07); border-radius: 50%;
+  }
+  .result-hero::after {
+    content: '🌾 🌿 🌾';
+    position: absolute; bottom: 6px; left: 0; right: 0;
+    font-size: 1.1rem; opacity: 0.18; text-align: center; letter-spacing: 8px;
+  }
+
+  .recommended-label {
+    display: inline-block;
+    background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 30px; padding: 5px 16px;
+    font-size: 0.82rem; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase;
+    margin-bottom: 16px; backdrop-filter: blur(4px);
+  }
+  .crop-emoji {
+    font-size: 5.5rem; display: block; margin-bottom: 10px;
+    animation: bounceIn 0.8s cubic-bezier(.36,1.6,.54,.97) 0.2s both;
+    filter: drop-shadow(0 8px 20px rgba(0,0,0,0.2));
+  }
+  @keyframes bounceIn {
+    from { opacity:0; transform:scale(0.3); }
+    to { opacity:1; transform:scale(1); }
+  }
+  .crop-name {
+    font-family: 'Yatra One', cursive;
+    font-size: 2.8rem; letter-spacing: 1px;
+    margin-bottom: 10px; position: relative; z-index: 1; text-transform: capitalize;
+  }
+  .crop-meta {
+    display: flex; align-items: center; justify-content: center;
+    gap: 8px; flex-wrap: wrap; position: relative; z-index: 1;
+  }
+  .crop-chip {
+    background: rgba(255,255,255,0.18); border-radius: 20px;
+    padding: 5px 13px; font-size: 0.83rem; font-weight: 700;
+    backdrop-filter: blur(4px);
+  }
+
+  /* ── Body ── */
+  .result-body { padding: 28px 28px 30px; }
+
+  .section-label {
+    font-size: 0.78rem; text-transform: uppercase; letter-spacing: 1px;
+    color: #999; font-weight: 900; margin-bottom: 10px;
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  .desc-box {
+    background: linear-gradient(135deg, #edfbf1, #f6fdf8);
+    border: 1.5px solid var(--border); border-radius: 16px;
+    padding: 18px 20px; margin-bottom: 20px;
+    font-size: 0.93rem; color: #444; font-weight: 600; line-height: 1.7;
+  }
+
+  /* ── Ideal conditions ── */
+  .cond-grid {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 24px;
+  }
+  .cond-item {
+    background: #f9fdf9; border: 1.5px solid var(--border);
+    border-radius: 14px; padding: 14px 10px; text-align: center;
+  }
+  .cond-icon { font-size: 1.4rem; display: block; margin-bottom: 4px; }
+  .cond-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.6px; color: #aaa; font-weight: 800; display: block; }
+  .cond-val { font-size: 0.82rem; font-weight: 900; color: var(--green-mid); }
+
+  /* ── NEW: Weather intelligence card ── */
+  .weather-intel {
+    background: linear-gradient(135deg, #e3f2fd, #f0f8ff);
+    border: 2px solid #90caf9; border-radius: 18px;
+    padding: 18px 20px; margin-bottom: 20px;
+  }
+  .weather-intel-title {
+    font-size: 0.78rem; text-transform: uppercase; letter-spacing: 1px;
+    color: #1565c0; font-weight: 900; margin-bottom: 12px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .weather-intel-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+  }
+  .wi-item {
+    background: white; border-radius: 12px; padding: 12px;
+    text-align: center; border: 1px solid #bbdefb;
+  }
+  .wi-icon { font-size: 1.3rem; display: block; margin-bottom: 3px; }
+  .wi-label { font-size: 0.68rem; text-transform: uppercase; color: #90a4ae; font-weight: 800; display: block; letter-spacing: 0.5px; }
+  .wi-val { font-size: 0.9rem; font-weight: 900; color: #1565c0; }
+
+  /* ── NEW: Irrigation result card ── */
+  .irr-result {
+    border-radius: 18px;
+    padding: 18px 20px; margin-bottom: 20px;
+    border: 2px solid;
+  }
+  .irr-result.yes {
+    background: linear-gradient(135deg, #e8f5e9, #f1f8e9);
+    border-color: var(--green-bright);
+  }
+  .irr-result.no {
+    background: linear-gradient(135deg, #fff8e1, #fffbea);
+    border-color: var(--gold);
+  }
+  .irr-header {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
+  }
+  .irr-badge {
+    font-size: 0.75rem; font-weight: 900; text-transform: uppercase;
+    letter-spacing: 0.8px; padding: 4px 12px; border-radius: 20px;
+  }
+  .irr-result.yes .irr-badge { background: #edfbf1; color: var(--green-mid); }
+  .irr-result.no  .irr-badge { background: #fffbea; color: #a07000; }
+  .irr-row-data {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+  }
+  .irr-box {
+    background: white; border-radius: 12px; padding: 12px;
+    text-align: center;
+  }
+  .irr-box-label { font-size: 0.68rem; text-transform: uppercase; color: #aaa; font-weight: 800; display: block; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .irr-box-val { font-size: 0.95rem; font-weight: 900; color: var(--text-dark); }
+  .irr-box-val.green { color: var(--green-mid); }
+  .irr-box-val.gold  { color: #a07000; }
+
+  /* ── NEW: Irrigation recommendation banner ── */
+  .irr-suggestion {
+    background: linear-gradient(135deg, #f3e5f5, #fce4ec);
+    border: 2px solid #ce93d8; border-radius: 18px;
+    padding: 18px 20px; margin-bottom: 20px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .irr-sug-icon { font-size: 2.2rem; flex-shrink: 0; }
+  .irr-sug-title { font-size: 0.82rem; font-weight: 900; color: #6a1b9a; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 4px; }
+  .irr-sug-val { font-size: 1.15rem; font-weight: 900; color: #4a148c; }
+  .irr-sug-sub { font-size: 0.8rem; color: #9c27b0; font-weight: 700; margin-top: 2px; }
+
+  /* ── Action buttons ── */
+  .action-row {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  }
+  .action-btn {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 15px; border-radius: 14px; text-decoration: none;
+    font-size: 0.92rem; font-weight: 900; transition: 0.22s;
+  }
+  .action-btn.primary {
+    background: linear-gradient(135deg, var(--green-bright), var(--green-mid));
+    color: white; box-shadow: 0 8px 24px rgba(46,125,79,0.35);
+  }
+  .action-btn.primary:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(46,125,79,0.45); }
+  .action-btn.secondary {
+    background: white; border: 2px solid var(--border); color: var(--green-mid);
+  }
+  .action-btn.secondary:hover { background: #edfbf1; border-color: var(--green-bright); }
+
+  .support-btn {
+    position: fixed; bottom: 24px; right: 24px;
+    background: linear-gradient(135deg, var(--green-mid), var(--green-deep));
+    color: white; padding: 13px 22px; border-radius: 50px;
+    text-decoration: none; font-size: 15px; font-weight: 800;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25); z-index: 100; transition: 0.2s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .support-btn:hover { transform: translateY(-2px); }
+
+  /* ── Language Toggle ── */
+  .lang-toggle {
+    display: flex; align-items: center;
+    background: white; border: 1.5px solid var(--border);
+    border-radius: 30px; overflow: hidden;
+    box-shadow: 0 2px 8px rgba(46,125,79,0.10);
+    flex-shrink: 0;
+  }
+  .lang-toggle a {
+    padding: 7px 14px; text-decoration: none;
+    font-size: 0.82rem; font-weight: 900;
+    color: #aaa; transition: 0.2s;
+    white-space: nowrap;
+  }
+  .lang-toggle a.active {
+    background: linear-gradient(135deg, var(--green-bright), var(--green-mid));
+    color: white; border-radius: 28px;
+    margin: 2px;
+  }
+  .lang-toggle a:not(.active):hover { color: var(--green-mid); }
+
+
+  /* ── Profile Button ─────────────────────────────────────────────────────── */
+  .profile-wrap {
+    position: fixed; bottom: 82px; right: 24px;
+    z-index: 102;
+  }
+  .profile-btn {
+    display: flex; align-items: center; gap: 9px;
+    background: white;
+    border: 2px solid var(--border);
+    border-radius: 50px;
+    padding: 11px 18px 11px 14px;
+    font-size: 0.88rem; font-weight: 900;
+    color: var(--green-deep);
+    cursor: pointer;
+    box-shadow: 0 6px 22px rgba(46,125,79,0.16);
+    transition: 0.22s;
+    white-space: nowrap;
+    font-family: 'Nunito', sans-serif;
+  }
+  .profile-btn:hover {
+    background: #edfbf1; border-color: var(--green-bright);
+    box-shadow: 0 10px 30px rgba(46,125,79,0.24); transform: translateY(-2px);
+  }
+  .profile-avatar {
+    width: 30px; height: 30px;
+    background: linear-gradient(135deg, var(--green-bright), var(--green-mid));
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 0.9rem; color: white; font-weight: 900; flex-shrink: 0;
+  }
+  .profile-chevron { font-size: 0.65rem; color: #aaa; transition: transform 0.2s; margin-left: 2px; }
+  .profile-wrap.open .profile-chevron { transform: rotate(180deg); }
+  .profile-dropdown {
+    position: absolute; bottom: calc(100% + 10px); right: 0;
+    background: white; border: 1.5px solid var(--border); border-radius: 18px;
+    box-shadow: 0 16px 48px rgba(46,125,79,0.18); overflow: hidden; min-width: 190px;
+    opacity: 0; transform: translateY(8px) scale(0.97); pointer-events: none;
+    transition: opacity 0.2s, transform 0.2s; transform-origin: bottom right;
+  }
+  .profile-wrap.open .profile-dropdown { opacity: 1; transform: translateY(0) scale(1); pointer-events: all; }
+  .profile-dropdown-header { padding: 14px 16px 10px; border-bottom: 1px solid var(--border); }
+  .profile-dropdown-name { font-weight: 900; font-size: 0.95rem; color: var(--green-deep); }
+  .profile-dropdown-sub { font-size: 0.76rem; color: #aaa; font-weight: 600; margin-top: 2px; }
+  .profile-dropdown a {
+    display: flex; align-items: center; gap: 11px; padding: 13px 16px;
+    text-decoration: none; font-size: 0.9rem; font-weight: 800;
+    color: var(--text-dark); transition: background 0.15s; border-bottom: 1px solid #f0f0f0;
+  }
+  .profile-dropdown a:last-child { border-bottom: none; }
+  .profile-dropdown a:hover { background: #f4fdf6; color: var(--green-mid); }
+  .profile-dropdown a.logout-link:hover { background: #fff5f5; color: #c62828; }
+  .profile-dropdown-icon { font-size: 1rem; }
+</style>
+</head>
+<body>
+<div class="nature-header"></div>
+<div class="bg-pattern"></div>
+
+<svg class="field-svg" viewBox="0 0 1440 110" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="0" y="80" width="1440" height="30" fill="#a5d6a7" opacity="0.35"/>
+  <g opacity="0.4">
+    <line x1="80"  y1="80" x2="80"  y2="48" stroke="#558b2f" stroke-width="2.5"/>
+    <ellipse cx="80"  cy="43" rx="5" ry="13" fill="#66bb6a"/>
+    <line x1="400" y1="80" x2="400" y2="46" stroke="#558b2f" stroke-width="2.5"/>
+    <ellipse cx="400" cy="41" rx="5" ry="13" fill="#66bb6a"/>
+    <line x1="700" y1="80" x2="700" y2="43" stroke="#558b2f" stroke-width="2.5"/>
+    <ellipse cx="700" cy="38" rx="5" ry="13" fill="#66bb6a"/>
+    <line x1="1000" y1="80" x2="1000" y2="47" stroke="#558b2f" stroke-width="2.5"/>
+    <ellipse cx="1000" cy="42" rx="5" ry="13" fill="#66bb6a"/>
+    <line x1="1300" y1="80" x2="1300" y2="44" stroke="#558b2f" stroke-width="2.5"/>
+    <ellipse cx="1300" cy="39" rx="5" ry="13" fill="#66bb6a"/>
+  </g>
+</svg>
+
+<div class="container">
+  <div class="top-bar">
+    <a href="/" class="brand-pill">🌾 Kisan Suvidha</a>
+    <a href="/crop_page" class="back-btn">← {% if lang == 'hi' %}वापस{% else %}Back{% endif %}</a>
+    <div class="lang-toggle">
+      <a href="{{ request.path }}?lang=en" class="{% if lang != 'hi' %}active{% endif %}">EN</a>
+      <a href="{{ request.path }}?lang=hi" class="{% if lang == 'hi' %}active{% endif %}">हि</a>
+    </div>
+  </div>
+
+  <div class="result-card">
+    <!-- ── Hero ── -->
+    <div class="result-hero">
+      <div class="recommended-label">✅ {% if lang == 'hi' %}ML अनुशंसित फसल{% else %}ML Recommended Crop{% endif %}</div>
+      <span class="crop-emoji">{{ crop_emoji }}</span>
+      <div class="crop-name">{{ crop }}</div>
+      <div class="crop-meta">
+        <span class="crop-chip">📍 {{ district }}</span>
+        <span class="crop-chip">📅 {{ season }}</span>
+        <span class="crop-chip">🪨 {{ soil }}</span>
+        <span class="crop-chip">💧 {% if irrigation_available %}{% if lang == 'hi' %}सिंचाई✅{% else %}Irrigated✅{% endif %}{% else %}{% if lang == 'hi' %}वर्षा आधारित{% else %}Rain-fed{% endif %}{% endif %}</span>
+      </div>
+    </div>
+
+    <div class="result-body">
+
+      <!-- ── Description ── -->
+      <div class="section-label">📖 {% if lang == 'hi' %}फसल विवरण{% else %}Crop Description{% endif %}</div>
+      <div class="desc-box">{{ crop_description }}</div>
+
+      <!-- ── 15-Day Weather Intelligence ── -->
+      <div class="weather-intel">
+        <div class="weather-intel-title">🌦️ {% if lang == 'hi' %}15-दिन मौसम डेटा{% else %}15-Day Weather Data Used{% endif %}</div>
+        <div class="weather-intel-grid">
+          <div class="wi-item">
+            <span class="wi-icon">🌡️</span>
+            <span class="wi-label">{% if lang == 'hi' %}औसत तापमान{% else %}Avg Temperature{% endif %}</span>
+            <span class="wi-val">{{ avg_temp }}°C</span>
+          </div>
+          <div class="wi-item">
+            <span class="wi-icon">💧</span>
+            <span class="wi-label">{% if lang == 'hi' %}औसत आर्द्रता{% else %}Avg Humidity{% endif %}</span>
+            <span class="wi-val">{{ avg_humidity }}%</span>
+          </div>
+          <div class="wi-item">
+            <span class="wi-icon">🌧️</span>
+            <span class="wi-label">{% if lang == 'hi' %}कुल वर्षा (15d){% else %}Total Rainfall (15d){% endif %}</span>
+            <span class="wi-val">{{ total_rainfall_15d }} mm</span>
+          </div>
+          <div class="wi-item">
+            <span class="wi-icon">💦</span>
+            <span class="wi-label">{% if lang == 'hi' %}प्रभावी वर्षा{% else %}Effective Rainfall{% endif %}</span>
+            <span class="wi-val">{{ effective_rainfall }} mm</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Irrigation Summary ── -->
+      <div class="irr-result {% if irrigation_available %}yes{% else %}no{% endif %}">
+        <div class="irr-header">
+          <span style="font-size:1.5rem;">{% if irrigation_available %}✅{% else %}🌧️{% endif %}</span>
+          <span class="irr-badge">
+            {% if irrigation_available %}
+              {% if lang == 'hi' %}सिंचाई सक्रिय{% else %}Irrigation Active{% endif %}
+            {% else %}
+              {% if lang == 'hi' %}केवल वर्षा{% else %}Rain-fed Only{% endif %}
+            {% endif %}
+          </span>
+        </div>
+        <div class="irr-row-data">
+          <div class="irr-box">
+            <span class="irr-box-label">{% if lang == 'hi' %}प्राकृतिक वर्षा{% else %}Natural Rainfall{% endif %}</span>
+            <span class="irr-box-val">{{ total_rainfall_15d }} mm</span>
+          </div>
+          <div class="irr-box">
+            <span class="irr-box-label">{% if lang == 'hi' %}सिंचाई जोड़ी{% else %}Irrigation Added{% endif %}</span>
+            <span class="irr-box-val {% if irrigation_added > 0 %}green{% else %}gold{% endif %}">
+              {% if irrigation_added > 0 %}+{{ irrigation_added }} mm{% else %}0 mm{% endif %}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Irrigation Suggestion ── -->
+      <div class="irr-suggestion">
+        <span class="irr-sug-icon">🚿</span>
+        <div>
+          <div class="irr-sug-title">{% if lang == 'hi' %}सिंचाई सुझाव{% else %}Irrigation Recommendation{% endif %}</div>
+          <div class="irr-sug-val">{{ irr_freq }} days/week</div>
+          <div class="irr-sug-sub">{{ irr_label }}</div>
+        </div>
+      </div>
+
+      <!-- ── Ideal conditions ── -->
+      <div class="section-label">🌡️ {% if lang == 'hi' %}आदर्श स्थितियाँ{% else %}Ideal Conditions{% endif %}</div>
+      <div class="cond-grid">
+        <div class="cond-item">
+          <span class="cond-icon">🌡️</span>
+          <span class="cond-label">{% if lang == 'hi' %}तापमान{% else %}Temperature{% endif %}</span>
+          <span class="cond-val">{{ temp_range }}</span>
+        </div>
+        <div class="cond-item">
+          <span class="cond-icon">💧</span>
+          <span class="cond-label">{% if lang == 'hi' %}आर्द्रता{% else %}Humidity{% endif %}</span>
+          <span class="cond-val">{{ humidity_range }}</span>
+        </div>
+        <div class="cond-item">
+          <span class="cond-icon">🌧️</span>
+          <span class="cond-label">{% if lang == 'hi' %}वर्षा{% else %}Rainfall{% endif %}</span>
+          <span class="cond-val">{{ rainfall_range }}</span>
+        </div>
+      </div>
+
+      <!-- ── Actions ── -->
+      <div class="action-row">
+        <a href="/analysis_page" class="action-btn primary">📊 {% if lang == 'hi' %}10-दिन विश्लेषण{% else %}10-Day Analysis{% endif %}</a>
+        <a href="/schemes" class="action-btn secondary">🏛️ {% if lang == 'hi' %}योजनाएं{% else %}Schemes{% endif %}</a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<a href="/support" class="support-btn">🤝 {% if lang == 'hi' %}सहायता{% else %}Support{% endif %}</a>
+
+{% if session_name %}
+<div class="profile-wrap" id="profileWrap">
+  <div class="profile-btn" onclick="toggleProfile(event)">
+    <div class="profile-avatar">{{ session_name[0]|upper }}</div>
+    <span>Hi, {{ session_name.split()[0] }}</span>
+    <span class="profile-chevron">▼</span>
+  </div>
+  <div class="profile-dropdown">
+    <div class="profile-dropdown-header">
+      <div class="profile-dropdown-name">{{ session_name }}</div>
+      <div class="profile-dropdown-sub">📱 {{ session_mobile }}</div>
+    </div>
+    <a href="/history?lang={{ lang }}">
+      <span class="profile-dropdown-icon">📋</span>
+      {% if lang == 'hi' %}मेरी हिस्ट्री{% else %}My History{% endif %}
+    </a>
+    <a href="/logout" class="logout-link">
+      <span class="profile-dropdown-icon">🚪</span>
+      {% if lang == 'hi' %}लॉग आउट{% else %}Logout{% endif %}
+    </a>
+  </div>
+</div>
+<script>
+function toggleProfile(e){e.stopPropagation();document.getElementById("profileWrap").classList.toggle("open");}
+document.addEventListener("click",function(){var w=document.getElementById("profileWrap");if(w)w.classList.remove("open");});
+</script>
+{% endif %}
+
+</body>
+</html>

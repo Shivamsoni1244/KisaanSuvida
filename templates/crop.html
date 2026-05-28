@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>{% if lang == 'hi' %}मिट्टी दर्ज करें{% else %}Crop Recommendation{% endif %}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Yatra+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green-deep: #1a4d2e;
+    --green-mid: #2e7d4f;
+    --green-bright: #4caf73;
+    --gold: #f5c842;
+    --cream: #fdf8f0;
+    --text-dark: #1a2e1a;
+    --border: #c8e6c9;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    min-height: 100vh;
+    background: #e8f5e9;
+    font-family: 'Nunito', sans-serif;
+    padding: 28px 18px 90px;
+    position: relative; overflow-x: hidden;
+  }
+  .bg-pattern {
+    position: fixed; inset: 0; z-index: 0;
+    background:
+      radial-gradient(ellipse at 100% 0%, rgba(76,175,115,0.22) 0%, transparent 50%),
+      radial-gradient(ellipse at 0% 100%, rgba(245,200,66,0.10) 0%, transparent 50%),
+      linear-gradient(170deg, #c8e6c9 0%, #e8f5e9 60%, #f1f8e9 100%);
+  }
+  .nature-header {
+    position: fixed; top: 0; left: 0; right: 0; height: 6px;
+    background: linear-gradient(90deg, var(--green-mid), var(--green-bright), var(--gold), var(--green-bright), var(--green-mid));
+    z-index: 20;
+  }
+  .top-bar {
+    position: relative; z-index: 10;
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 26px; max-width: 520px;
+    margin-left: auto; margin-right: auto;
+  }
+  .brand-pill {
+    display: flex; align-items: center; gap: 8px;
+    background: white; border: 1.5px solid var(--border); border-radius: 30px;
+    padding: 8px 18px; color: var(--green-deep);
+    font-family: 'Yatra One', cursive; font-size: 1.05rem;
+    box-shadow: 0 2px 12px rgba(46,125,79,0.12); text-decoration: none;
+  }
+  .back-btn {
+    display: flex; align-items: center; gap: 6px;
+    background: white; border: 1.5px solid var(--border); border-radius: 30px;
+    padding: 8px 16px; color: var(--green-mid); font-size: 0.88rem; font-weight: 800;
+    text-decoration: none; transition: 0.2s;
+    box-shadow: 0 2px 8px rgba(46,125,79,0.10); margin-left: auto;
+  }
+  .back-btn:hover { background: #edfbf1; border-color: var(--green-bright); }
+
+  .container { position: relative; z-index: 10; max-width: 520px; margin: 0 auto; }
+
+  .info-strip {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 22px;
+  }
+  .info-card {
+    background: white; border: 1.5px solid var(--border); border-radius: 16px;
+    padding: 14px; color: var(--text-dark);
+    box-shadow: 0 2px 12px rgba(46,125,79,0.10);
+    animation: fadeUp 0.5s ease both;
+  }
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(16px); }
+    to { opacity:1; transform:translateY(0); }
+  }
+  .info-icon { font-size: 1.5rem; display: block; margin-bottom: 5px; }
+  .info-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.8px; color: #888; display: block; font-weight: 800; }
+  .info-value { font-size: 0.88rem; font-weight: 900; color: var(--text-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .info-value.gold { color: var(--green-mid); }
+
+  .form-card {
+    background: white; border-radius: 24px; overflow: hidden;
+    box-shadow: 0 16px 48px rgba(46,125,79,0.14), 0 0 0 1.5px var(--border);
+    animation: riseIn 0.6s cubic-bezier(.16,1,.3,1) 0.1s both;
+  }
+  @keyframes riseIn {
+    from { opacity:0; transform:translateY(30px); }
+    to { opacity:1; transform:translateY(0); }
+  }
+  .card-header {
+    background: linear-gradient(135deg, var(--green-mid), var(--green-deep));
+    padding: 24px 30px; color: white;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .header-icon { font-size: 2.2rem; }
+  .header-title { font-size: 1.35rem; font-weight: 900; }
+  .header-sub { font-size: 0.82rem; opacity: 0.78; font-weight: 600; }
+
+  .card-body { padding: 30px; }
+
+  .section-label {
+    display: flex; align-items: center; gap: 7px;
+    font-size: 0.88rem; font-weight: 900; color: #555;
+    text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 14px;
+  }
+
+  /* ── Soil grid ── */
+  .soil-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 26px;
+  }
+  .soil-option { display: none; }
+  .soil-label {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    padding: 14px 6px; border: 2px solid var(--border); border-radius: 14px;
+    cursor: pointer; transition: 0.2s; background: #f9fdf9; text-align: center;
+  }
+  .soil-option:checked + .soil-label {
+    border-color: var(--green-bright); background: #edfbf1;
+    box-shadow: 0 0 0 3px rgba(76,175,115,0.18);
+  }
+  .soil-emoji { font-size: 1.7rem; }
+  .soil-name { font-size: 0.72rem; font-weight: 800; color: var(--text-dark); line-height: 1.2; }
+
+  /* ── Season selector ── */
+  .season-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 26px;
+  }
+  .season-radio { display: none; }
+  .season-label {
+    display: flex; flex-direction: column; align-items: center; gap: 5px;
+    padding: 14px 8px; border: 2px solid var(--border); border-radius: 14px;
+    cursor: pointer; transition: 0.2s; background: #f9fdf9; text-align: center;
+  }
+  .season-radio:checked + .season-label {
+    border-color: var(--gold); background: #fffbea;
+    box-shadow: 0 0 0 3px rgba(245,200,66,0.22);
+  }
+  .season-emoji { font-size: 1.7rem; }
+  .season-name { font-size: 0.78rem; font-weight: 800; color: var(--text-dark); }
+  .season-hint { font-size: 0.68rem; color: #999; font-weight: 700; }
+
+  /* ── Irrigation toggle ── */
+  .irr-row {
+    display: flex; gap: 12px; margin-bottom: 26px;
+  }
+  .irr-radio { display: none; }
+  .irr-label {
+    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px;
+    padding: 16px 10px; border: 2px solid var(--border); border-radius: 14px;
+    cursor: pointer; transition: 0.2s; background: #f9fdf9; text-align: center;
+  }
+  .irr-radio.yes:checked + .irr-label {
+    border-color: #4caf73; background: #edfbf1;
+    box-shadow: 0 0 0 3px rgba(76,175,115,0.18);
+  }
+  .irr-radio.no:checked + .irr-label {
+    border-color: #e57373; background: #fff5f5;
+    box-shadow: 0 0 0 3px rgba(229,115,115,0.15);
+  }
+  .irr-emoji { font-size: 1.8rem; }
+  .irr-name { font-size: 0.82rem; font-weight: 900; color: var(--text-dark); }
+  .irr-sub { font-size: 0.7rem; color: #999; font-weight: 700; }
+
+  /* Zaid-no-irrigation warning */
+  #zaid-warning {
+    display: none;
+    background: #fff3cd; border: 2px solid #ffc107; border-radius: 12px;
+    padding: 12px 16px; margin-bottom: 20px;
+    font-size: 0.85rem; font-weight: 700; color: #7a5c00;
+  }
+
+  .submit-btn {
+    width: 100%; padding: 17px;
+    background: linear-gradient(135deg, var(--green-bright), var(--green-mid));
+    color: white; border: none; border-radius: 14px;
+    font-size: 1.1rem; font-weight: 900;
+    font-family: 'Nunito', sans-serif; cursor: pointer; transition: 0.22s;
+    box-shadow: 0 8px 24px rgba(46,125,79,0.35);
+  }
+  .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(46,125,79,0.45); }
+
+  .auto-predict-banner {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 16px 20px;
+    background: linear-gradient(135deg, #fffbea, #fff8e1);
+    border: 2px solid var(--gold); border-radius: 16px;
+    margin-top: 18px;
+    animation: fadeUp 0.5s ease 0.2s both;
+  }
+  .ap-icon { font-size: 1.8rem; flex-shrink: 0; margin-top: 2px; }
+  .ap-title { font-size: 0.88rem; font-weight: 900; color: #7a5c00; margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .ap-sub { font-size: 0.82rem; color: #8a7040; font-weight: 600; line-height: 1.5; }
+
+  .support-btn {
+    position: fixed; bottom: 24px; right: 24px;
+    background: linear-gradient(135deg, var(--green-mid), var(--green-deep));
+    color: white; padding: 13px 22px; border-radius: 50px;
+    text-decoration: none; font-size: 15px; font-weight: 800;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25); z-index: 100; transition: 0.2s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .support-btn:hover { transform: translateY(-2px); }
+
+  /* ── Language Toggle ── */
+  .lang-toggle {
+    display: flex; align-items: center;
+    background: white; border: 1.5px solid var(--border);
+    border-radius: 30px; overflow: hidden;
+    box-shadow: 0 2px 8px rgba(46,125,79,0.10);
+    flex-shrink: 0;
+  }
+  .lang-toggle a {
+    padding: 7px 14px; text-decoration: none;
+    font-size: 0.82rem; font-weight: 900;
+    color: #aaa; transition: 0.2s;
+    white-space: nowrap;
+  }
+  .lang-toggle a.active {
+    background: linear-gradient(135deg, var(--green-bright), var(--green-mid));
+    color: white; border-radius: 28px;
+    margin: 2px;
+  }
+  .lang-toggle a:not(.active):hover { color: var(--green-mid); }
+
+
+  /* ── Profile Button ─────────────────────────────────────────────────────── */
+  .profile-wrap {
+    position: fixed; bottom: 82px; right: 24px;
+    z-index: 102;
+  }
+  .profile-btn {
+    display: flex; align-items: center; gap: 9px;
+    background: white;
+    border: 2px solid var(--border);
+    border-radius: 50px;
+    padding: 11px 18px 11px 14px;
+    font-size: 0.88rem; font-weight: 900;
+    color: var(--green-deep);
+    cursor: pointer;
+    box-shadow: 0 6px 22px rgba(46,125,79,0.16);
+    transition: 0.22s;
+    white-space: nowrap;
+    font-family: 'Nunito', sans-serif;
+  }
+  .profile-btn:hover {
+    background: #edfbf1; border-color: var(--green-bright);
+    box-shadow: 0 10px 30px rgba(46,125,79,0.24); transform: translateY(-2px);
+  }
+  .profile-avatar {
+    width: 30px; height: 30px;
+    background: linear-gradient(135deg, var(--green-bright), var(--green-mid));
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 0.9rem; color: white; font-weight: 900; flex-shrink: 0;
+  }
+  .profile-chevron { font-size: 0.65rem; color: #aaa; transition: transform 0.2s; margin-left: 2px; }
+  .profile-wrap.open .profile-chevron { transform: rotate(180deg); }
+  .profile-dropdown {
+    position: absolute; bottom: calc(100% + 10px); right: 0;
+    background: white; border: 1.5px solid var(--border); border-radius: 18px;
+    box-shadow: 0 16px 48px rgba(46,125,79,0.18); overflow: hidden; min-width: 190px;
+    opacity: 0; transform: translateY(8px) scale(0.97); pointer-events: none;
+    transition: opacity 0.2s, transform 0.2s; transform-origin: bottom right;
+  }
+  .profile-wrap.open .profile-dropdown { opacity: 1; transform: translateY(0) scale(1); pointer-events: all; }
+  .profile-dropdown-header { padding: 14px 16px 10px; border-bottom: 1px solid var(--border); }
+  .profile-dropdown-name { font-weight: 900; font-size: 0.95rem; color: var(--green-deep); }
+  .profile-dropdown-sub { font-size: 0.76rem; color: #aaa; font-weight: 600; margin-top: 2px; }
+  .profile-dropdown a {
+    display: flex; align-items: center; gap: 11px; padding: 13px 16px;
+    text-decoration: none; font-size: 0.9rem; font-weight: 800;
+    color: var(--text-dark); transition: background 0.15s; border-bottom: 1px solid #f0f0f0;
+  }
+  .profile-dropdown a:last-child { border-bottom: none; }
+  .profile-dropdown a:hover { background: #f4fdf6; color: var(--green-mid); }
+  .profile-dropdown a.logout-link:hover { background: #fff5f5; color: #c62828; }
+  .profile-dropdown-icon { font-size: 1rem; }
+</style>
+</head>
+<body>
+<div class="nature-header"></div>
+<div class="bg-pattern"></div>
+
+<div class="top-bar">
+  <a href="/" class="brand-pill">🌾 Kisan Suvidha</a>
+  <a href="/choose" class="back-btn">← {% if lang == 'hi' %}वापस{% else %}Back{% endif %}</a>
+  <div class="lang-toggle">
+    <a href="{{ request.path }}?lang=en" class="{% if lang != 'hi' %}active{% endif %}">EN</a>
+    <a href="{{ request.path }}?lang=hi" class="{% if lang == 'hi' %}active{% endif %}">हि</a>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="info-strip">
+    <div class="info-card">
+      <span class="info-icon">📍</span>
+      <span class="info-label">{% if lang == 'hi' %}जिला{% else %}District{% endif %}</span>
+      <span class="info-value gold">{{ district }}</span>
+    </div>
+    <div class="info-card">
+      <span class="info-icon">🌤️</span>
+      <span class="info-label">{% if lang == 'hi' %}मौसम{% else %}Weather{% endif %}</span>
+      <span class="info-value">{{ weather }}</span>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <div class="card-header">
+      <span class="header-icon">🌱</span>
+      <div>
+        <div class="header-title">{% if lang == 'hi' %}फसल सिफारिश{% else %}Crop Recommendation{% endif %}</div>
+        <div class="header-sub">{% if lang == 'hi' %}मिट्टी, सीजन और सिंचाई भरें{% else %}Enter soil, season & irrigation details{% endif %}</div>
+      </div>
+    </div>
+
+    <div class="card-body">
+      <form action="/crop" method="POST" id="cropForm">
+        <input type="hidden" name="lang" value="{{ lang }}">
+
+        <!-- ── Soil ── -->
+        <div class="section-label">{% if lang == 'hi' %}मिट्टी का प्रकार{% else %}Soil Type{% endif %}</div>
+        <div class="soil-grid">
+          {% set soils = [
+            ("Alluvial","🟫","Alluvial","जलोढ़"),
+            ("Black","⬛","Black","काली"),
+            ("Red","🔴","Red","लाल"),
+            ("Laterite","🧱","Laterite","लेटेराइट"),
+            ("Desert","🏜️","Desert","रेगिस्तानी"),
+            ("Mountain","⛰️","Mountain","पहाड़ी"),
+            ("Saline","🌊","Saline","लवणीय"),
+            ("Peaty","🍂","Peaty","पीट")
+          ] %}
+          {% for val, emoji, en_name, hi_name in soils %}
+          <input class="soil-option" type="radio" name="soil" id="s_{{ val }}" value="{{ val }}" {% if loop.first %}checked{% endif %}>
+          <label class="soil-label" for="s_{{ val }}">
+            <span class="soil-emoji">{{ emoji }}</span>
+            <span class="soil-name">{% if lang == 'hi' %}{{ hi_name }}{% else %}{{ en_name }}{% endif %}</span>
+          </label>
+          {% endfor %}
+        </div>
+
+        <!-- ── Season ── -->
+        <div class="section-label">{% if lang == 'hi' %}सीजन{% else %}Season{% endif %}</div>
+        <div class="season-grid">
+          <input class="season-radio" type="radio" name="season" id="rabi" value="Rabi" {% if auto_season == 'Rabi' %}checked{% endif %}>
+          <label class="season-label" for="rabi">
+            <span class="season-emoji">🌾</span>
+            <span class="season-name">Rabi</span>
+            <span class="season-hint">{% if lang == 'hi' %}अक्टू–मार्च{% else %}Oct–Mar{% endif %}</span>
+          </label>
+
+          <input class="season-radio" type="radio" name="season" id="kharif" value="Kharif" {% if auto_season == 'Kharif' %}checked{% endif %}>
+          <label class="season-label" for="kharif">
+            <span class="season-emoji">🌧️</span>
+            <span class="season-name">Kharif</span>
+            <span class="season-hint">{% if lang == 'hi' %}जून–सितं{% else %}Jun–Sep{% endif %}</span>
+          </label>
+
+          <input class="season-radio" type="radio" name="season" id="zaid" value="Zaid" {% if auto_season == 'Zaid' %}checked{% endif %}>
+          <label class="season-label" for="zaid">
+            <span class="season-emoji">☀️</span>
+            <span class="season-name">Zaid</span>
+            <span class="season-hint">{% if lang == 'hi' %}मार्च–जून{% else %}Mar–Jun{% endif %}</span>
+          </label>
+        </div>
+
+        <!-- ── Irrigation ── -->
+        <div class="section-label">{% if lang == 'hi' %}सिंचाई उपलब्ध है?{% else %}Irrigation Available?{% endif %}</div>
+        <div class="irr-row">
+          <input class="irr-radio yes" type="radio" name="irrigation" id="irr_yes" value="yes">
+          <label class="irr-label" for="irr_yes">
+            <span class="irr-emoji">✅</span>
+            <span class="irr-name">{% if lang == 'hi' %}हाँ{% else %}Yes{% endif %}</span>
+            <span class="irr-sub">{% if lang == 'hi' %}सिंचाई उपलब्ध है{% else %}I have irrigation{% endif %}</span>
+          </label>
+
+          <input class="irr-radio no" type="radio" name="irrigation" id="irr_no" value="no" checked>
+          <label class="irr-label" for="irr_no">
+            <span class="irr-emoji">❌</span>
+            <span class="irr-name">{% if lang == 'hi' %}नहीं{% else %}No{% endif %}</span>
+            <span class="irr-sub">{% if lang == 'hi' %}केवल वर्षा पर निर्भर{% else %}Rain-fed only{% endif %}</span>
+          </label>
+        </div>
+
+        <!-- Zaid + No Irrigation warning -->
+        <div id="zaid-warning">
+          {% if lang == 'hi' %}जायद सीजन में सिंचाई अनिवार्य है। कृपया सिंचाई विकल्प चुनें।{% else %}Zaid season requires irrigation. Please select "Yes" for irrigation or change season.{% endif %}
+        </div>
+
+        <button type="submit" class="submit-btn" id="submitBtn">
+          {% if lang == 'hi' %}सिफारिश प्राप्त करें{% else %}Get Recommendation ⚡{% endif %}
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div class="auto-predict-banner">
+    <span class="ap-icon">🌦️</span>
+    <div>
+      <div class="ap-title">{% if lang == 'hi' %}15-दिन औसत मौसम उपयोग{% else %}15-Day Weather Average Active{% endif %}</div>
+      <div class="ap-sub">{% if lang == 'hi' %}पिछले 15 दिनों का तापमान, आर्द्रता और वर्षा औसत लेकर ML मॉडल चलेगा{% else %}Model uses avg temperature, humidity &amp; cumulative rainfall from the 15-day forecast for maximum accuracy{% endif %}</div>
+    </div>
+  </div>
+
+</div>
+
+<a href="/support" class="support-btn">{% if lang == 'hi' %}सहायता{% else %}Support{% endif %}</a>
+
+<script>
+  // Show warning when Zaid + No irrigation selected
+  const seasonRadios = document.querySelectorAll('input[name="season"]');
+  const irrRadios    = document.querySelectorAll('input[name="irrigation"]');
+  const warning      = document.getElementById('zaid-warning');
+  const submitBtn    = document.getElementById('submitBtn');
+
+  function checkZaid() {
+    const season = document.querySelector('input[name="season"]:checked')?.value;
+    const irr    = document.querySelector('input[name="irrigation"]:checked')?.value;
+    if (season === 'Zaid' && irr === 'no') {
+      warning.style.display = 'block';
+      submitBtn.style.opacity = '0.5';
+      submitBtn.style.cursor  = 'not-allowed';
+    } else {
+      warning.style.display = 'none';
+      submitBtn.style.opacity = '1';
+      submitBtn.style.cursor  = 'pointer';
+    }
+  }
+
+  seasonRadios.forEach(r => r.addEventListener('change', checkZaid));
+  irrRadios.forEach(r   => r.addEventListener('change', checkZaid));
+  checkZaid(); // run on load
+
+  // Prevent submit when Zaid + No
+  document.getElementById('cropForm').addEventListener('submit', function(e) {
+    const season = document.querySelector('input[name="season"]:checked')?.value;
+    const irr    = document.querySelector('input[name="irrigation"]:checked')?.value;
+    if (season === 'Zaid' && irr === 'no') {
+      e.preventDefault();
+    }
+  });
+</script>
+
+{% if session_name %}
+<div class="profile-wrap" id="profileWrap">
+  <div class="profile-btn" onclick="toggleProfile(event)">
+    <div class="profile-avatar">{{ session_name[0]|upper }}</div>
+    <span>Hi, {{ session_name.split()[0] }}</span>
+    <span class="profile-chevron">▼</span>
+  </div>
+  <div class="profile-dropdown">
+    <div class="profile-dropdown-header">
+      <div class="profile-dropdown-name">{{ session_name }}</div>
+      <div class="profile-dropdown-sub">📱 {{ session_mobile }}</div>
+    </div>
+    <a href="/history?lang={{ lang }}">
+      <span class="profile-dropdown-icon">📋</span>
+      {% if lang == 'hi' %}मेरी हिस्ट्री{% else %}My History{% endif %}
+    </a>
+    <a href="/logout" class="logout-link">
+      <span class="profile-dropdown-icon">🚪</span>
+      {% if lang == 'hi' %}लॉग आउट{% else %}Logout{% endif %}
+    </a>
+  </div>
+</div>
+<script>
+function toggleProfile(e){e.stopPropagation();document.getElementById("profileWrap").classList.toggle("open");}
+document.addEventListener("click",function(){var w=document.getElementById("profileWrap");if(w)w.classList.remove("open");});
+</script>
+{% endif %}
+
+</body>
+</html>

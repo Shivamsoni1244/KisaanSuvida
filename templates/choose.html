@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>{% if lang == 'hi' %}क्या करना है?{% else %}What would you like to do?{% endif %}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Yatra+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green-deep: #1a4d2e;
+    --green-mid: #2e7d4f;
+    --green-bright: #4caf73;
+    --gold: #f5c842;
+    --cream: #fdf8f0;
+    --text-dark: #1a2e1a;
+    --border: #c8e6c9;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    min-height: 100vh;
+    background: #e8f5e9;
+    font-family: 'Nunito', sans-serif;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 28px 18px 90px;
+    position: relative; overflow-x: hidden;
+  }
+  .bg-pattern {
+    position: fixed; inset: 0; z-index: 0;
+    background:
+      radial-gradient(ellipse at 100% 0%, rgba(76,175,115,0.22) 0%, transparent 50%),
+      radial-gradient(ellipse at 0% 100%, rgba(245,200,66,0.10) 0%, transparent 50%),
+      linear-gradient(170deg, #c8e6c9 0%, #e8f5e9 60%, #f1f8e9 100%);
+  }
+  .nature-header {
+    position: fixed; top: 0; left: 0; right: 0; height: 6px;
+    background: linear-gradient(90deg, var(--green-mid), var(--green-bright), var(--gold), var(--green-bright), var(--green-mid));
+    z-index: 20;
+  }
+  .container {
+    position: relative; z-index: 10;
+    max-width: 520px; width: 100%;
+  }
+  .top-bar {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 26px;
+  }
+  .brand-pill {
+    display: flex; align-items: center; gap: 8px;
+    background: white; border: 1.5px solid var(--border);
+    border-radius: 30px; padding: 8px 18px;
+    color: var(--green-deep); font-family: 'Yatra One', cursive;
+    font-size: 1.05rem; box-shadow: 0 2px 12px rgba(46,125,79,0.12);
+    text-decoration: none;
+  }
+  .back-btn {
+    display: flex; align-items: center; gap: 6px;
+    background: white; border: 1.5px solid var(--border);
+    border-radius: 30px; padding: 8px 16px;
+    color: var(--green-mid); font-size: 0.88rem; font-weight: 800;
+    text-decoration: none; transition: 0.2s;
+    box-shadow: 0 2px 8px rgba(46,125,79,0.10);
+    margin-left: auto;
+  }
+  .back-btn:hover { background: #edfbf1; border-color: var(--green-bright); }
+
+  .page-title {
+    font-family: 'Yatra One', cursive;
+    font-size: 1.7rem; color: var(--green-deep);
+    text-align: center; margin-bottom: 6px;
+  }
+  .page-sub {
+    text-align: center; color: #7a9a7a;
+    font-size: 0.92rem; font-weight: 700;
+    margin-bottom: 28px;
+  }
+
+  .choice-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 18px;
+  }
+  .choice-card {
+    background: white; border-radius: 24px;
+    border: 2px solid var(--border);
+    padding: 32px 22px;
+    text-align: center; text-decoration: none;
+    transition: all 0.28s cubic-bezier(.16,1,.3,1);
+    box-shadow: 0 4px 20px rgba(46,125,79,0.09);
+    display: flex; flex-direction: column; align-items: center; gap: 14px;
+    position: relative; overflow: hidden;
+    animation: riseIn 0.6s cubic-bezier(.16,1,.3,1) both;
+  }
+  .choice-card:nth-child(2) { animation-delay: 0.1s; }
+  @keyframes riseIn {
+    from { opacity:0; transform:translateY(30px) scale(0.97); }
+    to { opacity:1; transform:translateY(0) scale(1); }
+  }
+  .choice-card::after {
+    content: '';
+    position: absolute; inset: 0;
+    opacity: 0; transition: opacity 0.28s;
+    border-radius: 22px;
+  }
+  .choice-card.recommend::after {
+    background: linear-gradient(135deg, var(--green-bright), var(--green-mid));
+  }
+  .choice-card.analysis::after {
+    background: linear-gradient(135deg, #f5c842, #e8a000);
+  }
+  .choice-card:hover::after { opacity: 1; }
+  .choice-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 48px rgba(46,125,79,0.22);
+    border-color: transparent;
+  }
+  .choice-card:hover .choice-title,
+  .choice-card:hover .choice-desc,
+  .choice-card:hover .choice-tag { color: white !important; }
+  .choice-card:hover .choice-icon-wrap { background: rgba(255,255,255,0.22); }
+
+  .choice-icon-wrap {
+    width: 72px; height: 72px;
+    border-radius: 20px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.2rem;
+    position: relative; z-index: 1; transition: 0.2s;
+  }
+  .recommend .choice-icon-wrap { background: linear-gradient(135deg, #edfbf1, #c8f0d8); }
+  .analysis .choice-icon-wrap { background: linear-gradient(135deg, #fffbea, #fce8a0); }
+
+  .choice-title {
+    font-size: 1.1rem; font-weight: 900; color: var(--text-dark);
+    line-height: 1.3; position: relative; z-index: 1; transition: color 0.2s;
+  }
+  .choice-desc {
+    font-size: 0.82rem; color: #7a9a7a; font-weight: 700;
+    line-height: 1.55; position: relative; z-index: 1; transition: color 0.2s;
+  }
+  .choice-tag {
+    display: inline-block;
+    padding: 4px 12px; border-radius: 20px;
+    font-size: 0.75rem; font-weight: 900;
+    position: relative; z-index: 1; transition: color 0.2s;
+  }
+  .recommend .choice-tag { background: #edfbf1; color: var(--green-mid); }
+  .analysis .choice-tag { background: #fffbea; color: #a07000; }
+
+  .divider-text {
+    text-align: center; color: #bbb; font-size: 0.82rem; font-weight: 800;
+    margin: 22px 0; letter-spacing: 1px; text-transform: uppercase;
+  }
+
+  .support-btn {
+    position: fixed; bottom: 24px; right: 24px;
+    background: linear-gradient(135deg, var(--green-mid), var(--green-deep));
+    color: white; padding: 13px 22px; border-radius: 50px;
+    text-decoration: none; font-size: 15px; font-weight: 800;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.22); z-index: 100; transition: 0.2s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .support-btn:hover { transform: translateY(-2px); }
+
+  @media (max-width: 420px) {
+    .choice-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ── Language Toggle ── */
+  .lang-toggle {
+    display: flex; align-items: center;
+    background: white; border: 1.5px solid var(--border);
+    border-radius: 30px; overflow: hidden;
+    box-shadow: 0 2px 8px rgba(46,125,79,0.10);
+    flex-shrink: 0;
+  }
+  .lang-toggle a {
+    padding: 7px 14px; text-decoration: none;
+    font-size: 0.82rem; font-weight: 900;
+    color: #aaa; transition: 0.2s;
+    white-space: nowrap;
+  }
+  .lang-toggle a.active {
+    background: linear-gradient(135deg, var(--green-bright), var(--green-mid));
+    color: white; border-radius: 28px;
+    margin: 2px;
+  }
+  .lang-toggle a:not(.active):hover { color: var(--green-mid); }
+
+
+  /* ── Profile Button ─────────────────────────────────────────────────────── */
+  .profile-wrap {
+    position: fixed; bottom: 82px; right: 24px;
+    z-index: 102;
+  }
+  .profile-btn {
+    display: flex; align-items: center; gap: 9px;
+    background: white;
+    border: 2px solid var(--border);
+    border-radius: 50px;
+    padding: 11px 18px 11px 14px;
+    font-size: 0.88rem; font-weight: 900;
+    color: var(--green-deep);
+    cursor: pointer;
+    box-shadow: 0 6px 22px rgba(46,125,79,0.16);
+    transition: 0.22s;
+    white-space: nowrap;
+    font-family: 'Nunito', sans-serif;
+  }
+  .profile-btn:hover {
+    background: #edfbf1; border-color: var(--green-bright);
+    box-shadow: 0 10px 30px rgba(46,125,79,0.24); transform: translateY(-2px);
+  }
+  .profile-avatar {
+    width: 30px; height: 30px;
+    background: linear-gradient(135deg, var(--green-bright), var(--green-mid));
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 0.9rem; color: white; font-weight: 900; flex-shrink: 0;
+  }
+  .profile-chevron { font-size: 0.65rem; color: #aaa; transition: transform 0.2s; margin-left: 2px; }
+  .profile-wrap.open .profile-chevron { transform: rotate(180deg); }
+  .profile-dropdown {
+    position: absolute; bottom: calc(100% + 10px); right: 0;
+    background: white; border: 1.5px solid var(--border); border-radius: 18px;
+    box-shadow: 0 16px 48px rgba(46,125,79,0.18); overflow: hidden; min-width: 190px;
+    opacity: 0; transform: translateY(8px) scale(0.97); pointer-events: none;
+    transition: opacity 0.2s, transform 0.2s; transform-origin: bottom right;
+  }
+  .profile-wrap.open .profile-dropdown { opacity: 1; transform: translateY(0) scale(1); pointer-events: all; }
+  .profile-dropdown-header { padding: 14px 16px 10px; border-bottom: 1px solid var(--border); }
+  .profile-dropdown-name { font-weight: 900; font-size: 0.95rem; color: var(--green-deep); }
+  .profile-dropdown-sub { font-size: 0.76rem; color: #aaa; font-weight: 600; margin-top: 2px; }
+  .profile-dropdown a {
+    display: flex; align-items: center; gap: 11px; padding: 13px 16px;
+    text-decoration: none; font-size: 0.9rem; font-weight: 800;
+    color: var(--text-dark); transition: background 0.15s; border-bottom: 1px solid #f0f0f0;
+  }
+  .profile-dropdown a:last-child { border-bottom: none; }
+  .profile-dropdown a:hover { background: #f4fdf6; color: var(--green-mid); }
+  .profile-dropdown a.logout-link:hover { background: #fff5f5; color: #c62828; }
+  .profile-dropdown-icon { font-size: 1rem; }
+</style>
+</head>
+<body>
+<div class="nature-header"></div>
+<div class="bg-pattern"></div>
+
+<div class="container">
+  <div class="top-bar">
+    <a href="/" class="brand-pill">🌾 Kisan Suvidha</a>
+    <a href="/login?lang={{ lang }}" class="back-btn">← {% if lang == 'hi' %}वापस{% else %}Back{% endif %}</a>
+  <div class="lang-toggle">
+    <a href="/set_lang?lang=en" class="{% if lang != 'hi' %}active{% endif %}">EN</a>
+    <a href="/set_lang?lang=hi" class="{% if lang == 'hi' %}active{% endif %}">हि</a>
+  </div>
+  </div>
+
+  <div class="page-title">{% if lang == 'hi' %}आप क्या करना चाहते हैं?{% else %}What would you like?{% endif %}</div>
+  <div class="page-sub">{% if lang == 'hi' %}अपनी जरूरत के अनुसार विकल्प चुनें{% else %}Choose based on what you need today{% endif %}</div>
+
+  <div class="choice-grid">
+    <a href="/crop_page" class="choice-card recommend">
+      <div class="choice-icon-wrap">🌱</div>
+      <div class="choice-title">{% if lang == 'hi' %}फसल सिफारिश{% else %}Crop Recommendation{% endif %}</div>
+      <div class="choice-desc">{% if lang == 'hi' %}मिट्टी और मौसम के अनुसार सबसे अच्छी फसल जानें{% else %}Find the best crop to grow based on your soil & live weather{% endif %}</div>
+      <span class="choice-tag">ML Powered</span>
+    </a>
+
+    <a href="/analysis_page" class="choice-card analysis">
+      <div class="choice-icon-wrap">📊</div>
+      <div class="choice-title">{% if lang == 'hi' %}फसल विश्लेषण{% else %}Crop Analysis{% endif %}</div>
+      <div class="choice-desc">{% if lang == 'hi' %}अगले 10 दिन की मौसम आधारित फसल स्थिति जानें{% else %}Check 10-day weather forecast suitability for any crop{% endif %}</div>
+      <span class="choice-tag">10-Day Forecast</span>
+    </a>
+  </div>
+</div>
+
+<a href="/support" class="support-btn">{% if lang == 'hi' %}सहायता{% else %}Support{% endif %}</a>
+
+{% if session_name %}
+<div class="profile-wrap" id="profileWrap">
+  <div class="profile-btn" onclick="toggleProfile(event)">
+    <div class="profile-avatar">{{ session_name[0]|upper }}</div>
+    <span>Hi, {{ session_name.split()[0] }}</span>
+    <span class="profile-chevron">▼</span>
+  </div>
+  <div class="profile-dropdown">
+    <div class="profile-dropdown-header">
+      <div class="profile-dropdown-name">{{ session_name }}</div>
+      <div class="profile-dropdown-sub">📱 {{ session_mobile }}</div>
+    </div>
+    <a href="/history?lang={{ lang }}">
+      <span class="profile-dropdown-icon">📋</span>
+      {% if lang == 'hi' %}मेरी हिस्ट्री{% else %}My History{% endif %}
+    </a>
+    <a href="/logout" class="logout-link">
+      <span class="profile-dropdown-icon">🚪</span>
+      {% if lang == 'hi' %}लॉग आउट{% else %}Logout{% endif %}
+    </a>
+  </div>
+</div>
+<script>
+function toggleProfile(e){e.stopPropagation();document.getElementById("profileWrap").classList.toggle("open");}
+document.addEventListener("click",function(){var w=document.getElementById("profileWrap");if(w)w.classList.remove("open");});
+</script>
+{% endif %}
+
+</body>
+</html>

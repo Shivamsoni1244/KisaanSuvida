@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Kisan Suvidha - {% if lang == 'hi' %}लॉगिन{% else %}Login{% endif %}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Yatra+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green-deep:#1a4d2e; --green-mid:#2e7d4f; --green-bright:#4caf73;
+    --gold:#f5c842; --cream:#fdf8f0; --text-dark:#1a2e1a; --border:#c8e6c9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{min-height:100vh;background:#e8f5e9;font-family:'Nunito',sans-serif;
+    display:flex;align-items:center;justify-content:center;
+    padding:24px;position:relative;overflow-x:hidden;}
+  .bg-pattern{position:fixed;inset:0;z-index:0;
+    background:radial-gradient(ellipse at 80% 0%,rgba(76,175,115,.22) 0%,transparent 55%),
+      radial-gradient(ellipse at 20% 100%,rgba(245,200,66,.12) 0%,transparent 55%),
+      linear-gradient(160deg,#c8e6c9 0%,#e8f5e9 50%,#f1f8e9 100%);}
+  .field-svg{position:fixed;bottom:0;left:0;right:0;z-index:1;pointer-events:none;}
+  .page-layout{position:relative;z-index:10;display:grid;
+    grid-template-columns:1fr 1fr;background:white;border-radius:28px;overflow:hidden;
+    box-shadow:0 32px 80px rgba(46,125,79,.18),0 0 0 1.5px rgba(76,175,115,.2);
+    width:860px;max-width:98vw;animation:riseIn .7s cubic-bezier(.16,1,.3,1) both;}
+  @keyframes riseIn{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
+
+  /* LEFT PANEL */
+  .left-panel{background:linear-gradient(160deg,var(--green-mid) 0%,var(--green-deep) 100%);
+    padding:48px 36px;display:flex;flex-direction:column;justify-content:space-between;
+    color:white;position:relative;overflow:hidden;}
+  .left-panel::before{content:'';position:absolute;bottom:-60px;right:-60px;
+    width:260px;height:260px;background:rgba(255,255,255,.05);border-radius:50%;}
+  .left-panel::after{content:'';position:absolute;top:-40px;left:-40px;
+    width:180px;height:180px;background:rgba(245,200,66,.09);border-radius:50%;}
+  .kisan-illustration{position:relative;z-index:2;text-align:center;padding:10px 0 20px;}
+  .kisan-svg{width:100%;max-width:220px;}
+  .brand-logo{display:flex;align-items:center;gap:10px;position:relative;z-index:2;}
+  .brand-icon{width:48px;height:48px;background:rgba(255,255,255,.15);
+    border:2px solid rgba(255,255,255,.3);border-radius:13px;
+    display:flex;align-items:center;justify-content:center;font-size:24px;}
+  .brand-name{font-family:'Yatra One',cursive;font-size:1.5rem;}
+  .left-tagline{font-size:1.2rem;font-weight:800;line-height:1.45;margin-bottom:10px;position:relative;z-index:2;}
+  .left-sub{font-size:.88rem;opacity:.72;line-height:1.65;position:relative;z-index:2;}
+  .left-stats{display:flex;gap:12px;position:relative;z-index:2;}
+  .stat-chip{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);
+    border-radius:12px;padding:12px 14px;flex:1;text-align:center;}
+  .stat-num{font-size:1.25rem;font-weight:900;color:var(--gold);display:block;}
+  .stat-lbl{font-size:.75rem;opacity:.75;font-weight:700;}
+  .nature-row{display:flex;justify-content:center;gap:14px;position:relative;z-index:2;
+    font-size:1.5rem;opacity:.75;padding:8px 0;}
+
+  /* RIGHT PANEL */
+  .right-panel{padding:48px 44px;overflow-y:auto;max-height:92vh;}
+
+  /* TABS */
+  .tab-switcher{display:flex;background:#f0faf3;border:2px solid var(--border);
+    border-radius:14px;padding:4px;margin-bottom:28px;gap:4px;}
+  .tab-btn{flex:1;padding:11px;border:none;border-radius:10px;
+    font-family:'Nunito',sans-serif;font-size:.95rem;font-weight:900;
+    cursor:pointer;transition:.22s;background:transparent;color:#888;}
+  .tab-btn.active{background:linear-gradient(135deg,var(--green-bright),var(--green-mid));
+    color:white;box-shadow:0 4px 14px rgba(46,125,79,.28);}
+
+  /* FORM SECTIONS */
+  .form-section{display:none;}
+  .form-section.active{display:block;}
+  .form-title{font-size:1.55rem;font-weight:900;color:var(--green-deep);margin-bottom:5px;}
+  .form-subtitle{font-size:.92rem;color:#888;margin-bottom:26px;font-weight:600;}
+  .field-group{margin-bottom:18px;}
+  .field-label{display:block;font-size:.9rem;font-weight:800;color:#555;
+    margin-bottom:8px;text-transform:uppercase;letter-spacing:.7px;}
+  .field-wrap{position:relative;}
+  input, select{width:100%;padding:13px 16px;border:2px solid var(--border);
+    border-radius:12px;font-family:'Nunito',sans-serif;font-size:1rem;
+    color:var(--text-dark);background:#f9fdf9;outline:none;transition:.2s;
+    appearance:none;font-weight:700;}
+  input:focus, select:focus{border-color:var(--green-bright);
+    box-shadow:0 0 0 4px rgba(76,175,115,.15);background:white;}
+
+  /* OTP Row */
+  .otp-row{display:flex;gap:10px;align-items:stretch;}
+  .otp-row input{flex:1;text-align:center;letter-spacing:3px;}
+  .otp-row input::placeholder{letter-spacing:0;font-size:.85rem;color:#bbb;}
+  .send-otp-btn{padding:0 18px;
+    background:linear-gradient(135deg,var(--green-bright),var(--green-mid));
+    color:white;border:none;border-radius:12px;font-size:.85rem;font-weight:900;
+    font-family:'Nunito',sans-serif;cursor:pointer;white-space:nowrap;transition:.2s;
+    box-shadow:0 4px 14px rgba(46,125,79,.3);flex-shrink:0;}
+  .send-otp-btn:hover{transform:translateY(-1px);}
+  .send-otp-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+  .otp-notice{display:none;background:#edfbf1;border:1.5px solid #a5d6a7;
+    border-radius:10px;padding:10px 14px;font-size:.88rem;font-weight:700;
+    color:var(--green-mid);margin-top:8px;gap:8px;align-items:center;}
+  .otp-notice.show{display:flex;}
+  .otp-countdown{font-size:.82rem;color:#aaa;font-weight:700;margin-top:6px;display:none;}
+  .otp-countdown.show{display:block;}
+
+  /* SMS toggle row */
+  .sms-row{display:flex;align-items:center;justify-content:space-between;
+    background:#f0faf3;border:2px solid var(--border);
+    border-radius:14px;padding:14px 18px;margin-bottom:22px;}
+  .sms-info{display:flex;align-items:center;gap:12px;}
+  .sms-icon{font-size:1.4rem;}
+  .sms-text{font-size:.95rem;font-weight:800;color:var(--green-deep);}
+  .sms-desc{font-size:.8rem;color:#888;display:block;font-weight:600;}
+  .toggle{position:relative;display:inline-block;width:50px;height:28px;}
+  .toggle input{display:none;}
+  .toggle-slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;
+    background:#ddd;border-radius:28px;transition:.3s;}
+  .toggle-slider:before{content:'';position:absolute;width:22px;height:22px;
+    left:3px;bottom:3px;background:white;border-radius:50%;transition:.3s;
+    box-shadow:0 2px 6px rgba(0,0,0,.2);}
+  .toggle input:checked + .toggle-slider{background:var(--green-bright);}
+  .toggle input:checked + .toggle-slider:before{transform:translateX(22px);}
+
+  .submit-btn{width:100%;padding:16px;
+    background:linear-gradient(135deg,var(--green-bright),var(--green-mid));
+    color:white;border:none;border-radius:14px;font-size:1.1rem;font-weight:900;
+    font-family:'Nunito',sans-serif;cursor:pointer;transition:.22s;
+    box-shadow:0 8px 24px rgba(46,125,79,.35);margin-top:6px;}
+  .submit-btn:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(46,125,79,.45);}
+  .schemes-link{display:flex;align-items:center;justify-content:center;gap:7px;
+    margin-top:18px;padding:12px;background:#f0faf3;border:2px solid var(--border);
+    border-radius:12px;color:var(--green-mid);font-size:.92rem;font-weight:800;
+    text-decoration:none;transition:.2s;}
+  .schemes-link:hover{background:#e2f5e8;border-color:var(--green-bright);}
+  .flash-msg{padding:12px 16px;border-radius:11px;font-size:.92rem;font-weight:700;
+    margin-bottom:18px;display:flex;align-items:center;gap:9px;}
+  .flash-msg.success{background:#edfbf1;border:1.5px solid #a5d6a7;color:#1a5c33;}
+  .flash-msg.error{background:#fff3f3;border:1.5px solid #e57373;color:#b71c1c;}
+  .support-btn{position:fixed;bottom:24px;right:24px;
+    background:linear-gradient(135deg,var(--green-mid),var(--green-deep));
+    color:white;padding:13px 22px;border-radius:50px;text-decoration:none;
+    font-size:15px;font-weight:800;box-shadow:0 8px 24px rgba(0,0,0,.25);
+    z-index:100;transition:.2s;display:flex;align-items:center;gap:8px;}
+  .support-btn:hover{transform:translateY(-2px);}
+  @media(max-width:640px){
+    .left-panel{display:none;}
+    .page-layout{grid-template-columns:1fr;}
+    .right-panel{padding:32px 22px;max-height:none;}
+  }
+  .lang-toggle{display:flex;align-items:center;background:white;
+    border:1.5px solid var(--border);border-radius:30px;overflow:hidden;
+    box-shadow:0 2px 8px rgba(46,125,79,.10);flex-shrink:0;}
+  .lang-toggle a{padding:7px 14px;text-decoration:none;font-size:.82rem;
+    font-weight:900;color:#aaa;transition:.2s;white-space:nowrap;}
+  .lang-toggle a.active{background:linear-gradient(135deg,var(--green-bright),var(--green-mid));
+    color:white;border-radius:28px;margin:2px;}
+  .lang-toggle a:not(.active):hover{color:var(--green-mid);}
+  .info-note{background:#f0faf3;border:1.5px solid var(--border);border-radius:10px;
+    padding:10px 14px;font-size:.84rem;color:#555;font-weight:600;margin-bottom:18px;}
+</style>
+</head>
+<body>
+<div class="bg-pattern"></div>
+
+<svg class="field-svg" viewBox="0 0 1440 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="0" y="70" width="1440" height="30" fill="#a5d6a7" opacity="0.30"/>
+  <g opacity="0.38" fill="#66bb6a">
+    {% for x in [80,200,310,420,530,640,750,860,970,1080,1190,1300,1400] %}
+    <line x1="{{ x }}" y1="70" x2="{{ x }}" y2="42" stroke="#558b2f" stroke-width="2"/>
+    <ellipse cx="{{ x }}" cy="37" rx="4" ry="12"/>
+    {% endfor %}
+  </g>
+</svg>
+
+<div class="page-layout">
+
+  <!-- LEFT PANEL -->
+  <div class="left-panel">
+    <div class="brand-logo">
+      <div class="brand-icon">🌾</div>
+      <span class="brand-name">Kisan Suvidha</span>
+    </div>
+    <div class="kisan-illustration">
+      <svg class="kisan-svg" viewBox="0 0 220 200" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="170" cy="38" r="26" fill="rgba(245,200,66,0.32)"/>
+        <circle cx="170" cy="38" r="18" fill="rgba(245,200,66,0.5)"/>
+        <g stroke="rgba(245,200,66,0.5)" stroke-width="2" stroke-linecap="round">
+          <line x1="170" y1="8" x2="170" y2="2"/><line x1="192" y1="16" x2="196" y2="12"/>
+          <line x1="200" y1="38" x2="206" y2="38"/><line x1="192" y1="60" x2="196" y2="64"/>
+          <line x1="148" y1="16" x2="144" y2="12"/><line x1="140" y1="38" x2="134" y2="38"/>
+        </g>
+        <ellipse cx="50" cy="175" rx="70" ry="35" fill="rgba(76,175,115,0.30)"/>
+        <ellipse cx="160" cy="180" rx="80" ry="32" fill="rgba(76,175,115,0.25)"/>
+        <rect x="0" y="168" width="220" height="32" fill="rgba(76,175,115,0.20)"/>
+        <g stroke="rgba(255,255,255,0.55)" stroke-width="2" fill="none">
+          <line x1="20" y1="168" x2="20" y2="138"/><ellipse cx="20" cy="134" rx="4" ry="10" fill="rgba(255,255,255,0.4)" stroke="none"/>
+          <line x1="40" y1="168" x2="40" y2="132"/><ellipse cx="40" cy="128" rx="4" ry="10" fill="rgba(255,255,255,0.4)" stroke="none"/>
+          <line x1="60" y1="168" x2="60" y2="136"/><ellipse cx="60" cy="132" rx="4" ry="10" fill="rgba(255,255,255,0.4)" stroke="none"/>
+          <line x1="160" y1="168" x2="160" y2="134"/><ellipse cx="160" cy="130" rx="4" ry="10" fill="rgba(255,255,255,0.4)" stroke="none"/>
+          <line x1="180" y1="168" x2="180" y2="138"/><ellipse cx="180" cy="134" rx="4" ry="10" fill="rgba(255,255,255,0.4)" stroke="none"/>
+          <line x1="200" y1="168" x2="200" y2="133"/><ellipse cx="200" cy="129" rx="4" ry="10" fill="rgba(255,255,255,0.4)" stroke="none"/>
+        </g>
+        <g fill="rgba(255,255,255,0.85)">
+          <ellipse cx="105" cy="68" rx="24" ry="6" fill="rgba(245,200,66,0.75)"/>
+          <rect x="90" y="52" width="30" height="18" rx="10" fill="rgba(245,200,66,0.75)"/>
+          <circle cx="105" cy="78" r="14" fill="rgba(255,220,180,0.9)"/>
+          <rect x="90" y="94" width="30" height="38" rx="10" fill="rgba(255,255,255,0.75)"/>
+          <rect x="72" y="96" width="20" height="10" rx="5" transform="rotate(15,82,101)" fill="rgba(255,255,255,0.65)"/>
+          <rect x="118" y="96" width="22" height="10" rx="5" transform="rotate(-15,129,101)" fill="rgba(255,255,255,0.65)"/>
+          <rect x="92" y="130" width="12" height="24" rx="5" fill="rgba(255,255,255,0.55)"/>
+          <rect x="106" y="130" width="12" height="24" rx="5" fill="rgba(255,255,255,0.55)"/>
+          <line x1="132" y1="88" x2="148" y2="140" stroke="rgba(255,255,255,0.7)" stroke-width="3"/>
+          <rect x="144" y="138" width="16" height="7" rx="2" fill="rgba(255,255,255,0.6)" transform="rotate(-30,152,141)"/>
+        </g>
+        <line x1="85" y1="168" x2="85" y2="148" stroke="rgba(255,255,255,0.6)" stroke-width="2.5"/>
+        <ellipse cx="85" cy="143" rx="7" ry="10" fill="rgba(76,175,115,0.6)"/>
+      </svg>
+      <div class="left-tagline">
+        {% if lang == 'hi' %}आपकी फसल के लिए<br>सही सलाह, सही समय पर
+        {% else %}Right Advice for<br>Your Crop, Right Time{% endif %}
+      </div>
+      <div class="left-sub">
+        {% if lang == 'hi' %}मौसम, मिट्टी और क्षेत्र के अनुसार<br>स्मार्ट फसल सिफारिशें
+        {% else %}Smart crop recommendations based<br>on weather, soil and your region{% endif %}
+      </div>
+    </div>
+    <div class="nature-row">
+      <span>🌱</span><span>🌾</span><span>🌻</span><span>🌿</span><span>🍃</span>
+    </div>
+    <div class="left-stats">
+      <div class="stat-chip">
+        <span class="stat-num">28</span>
+        <span class="stat-lbl">{% if lang == 'hi' %}राज्य{% else %}States{% endif %}</span>
+      </div>
+      <div class="stat-chip">
+        <span class="stat-num">700+</span>
+        <span class="stat-lbl">{% if lang == 'hi' %}जिले{% else %}Districts{% endif %}</span>
+      </div>
+      <div class="stat-chip">
+        <span class="stat-num">5+</span>
+        <span class="stat-lbl">{% if lang == 'hi' %}योजनाएं{% else %}Schemes{% endif %}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+
+    <!-- Language toggle -->
+    <div style="display:flex;justify-content:flex-end;margin-bottom:12px;">
+      <div class="lang-toggle">
+        <a href="/login?lang=en" class="{% if lang != 'hi' %}active{% endif %}">EN</a>
+        <a href="/login?lang=hi" class="{% if lang == 'hi' %}active{% endif %}">हि</a>
+      </div>
+    </div>
+
+    {% if message %}<div class="flash-msg success">{{ message }}</div>{% endif %}
+    {% if error   %}<div class="flash-msg error"  >{{ error   }}</div>{% endif %}
+
+    <!-- Tab Switcher -->
+    <div class="tab-switcher">
+      <button class="tab-btn {% if active_tab != 'signup' %}active{% endif %}"
+              onclick="switchTab('signin', this)">
+        {% if lang == 'hi' %}साइन इन{% else %}Sign In{% endif %}
+      </button>
+      <button class="tab-btn {% if active_tab == 'signup' %}active{% endif %}"
+              onclick="switchTab('signup', this)">
+        {% if lang == 'hi' %}नया खाता{% else %}Sign Up{% endif %}
+      </button>
+    </div>
+
+    <!-- ═══ SIGN IN ═══ -->
+    <div class="form-section {% if active_tab != 'signup' %}active{% endif %}" id="section-signin">
+      <div class="form-title">{% if lang == 'hi' %}नमस्ते, किसान{% else %}Welcome Back{% endif %}</div>
+      <div class="form-subtitle">
+        {% if lang == 'hi' %}मोबाइल नंबर और पासवर्ड से साइन इन करें{% else %}Sign in with your mobile number and password{% endif %}
+      </div>
+
+      <form method="POST" action="/login">
+        <input type="hidden" name="lang" value="{{ lang }}">
+
+        <!-- Mobile -->
+        <div class="field-group">
+          <label class="field-label">{% if lang == 'hi' %}मोबाइल नंबर{% else %}Mobile Number{% endif %}</label>
+          <input type="text" name="mobile" id="signin-mobile"
+            placeholder="{% if lang == 'hi' %}10 अंकों का नंबर{% else %}10-digit mobile number{% endif %}"
+            required maxlength="10" pattern="[0-9]{10}" inputmode="numeric">
+        </div>
+
+        <!-- Password -->
+        <div class="field-group">
+          <label class="field-label">{% if lang == 'hi' %}पासवर्ड{% else %}Password{% endif %}</label>
+          <input type="password" name="password"
+            placeholder="{% if lang == 'hi' %}अपना पासवर्ड दर्ज करें{% else %}Enter your password{% endif %}"
+            required minlength="6">
+        </div>
+
+        <button type="submit" class="submit-btn">
+          {% if lang == 'hi' %}साइन इन करें{% else %}Sign In{% endif %}
+        </button>
+      </form>
+
+      <p style="text-align:center;margin-top:16px;font-size:.88rem;color:#888;font-weight:600;">
+        {% if lang == 'hi' %}नया उपयोगकर्ता?
+          <a href="#" onclick="switchTabByName('signup')" style="color:var(--green-mid);">नया खाता बनाएं</a>
+        {% else %}New user?
+          <a href="#" onclick="switchTabByName('signup')" style="color:var(--green-mid);">Create an account</a>
+        {% endif %}
+      </p>
+    </div>
+
+    <!-- ═══ SIGN UP ═══ -->
+    <div class="form-section {% if active_tab == 'signup' %}active{% endif %}" id="section-signup">
+      <div class="form-title">{% if lang == 'hi' %}नया खाता बनाएं{% else %}Create Account{% endif %}</div>
+      <div class="form-subtitle">
+        {% if lang == 'hi' %}जानकारी दर्ज करें और OTP से सत्यापित करें{% else %}Register your details and verify with OTP{% endif %}
+      </div>
+
+      <form method="POST" action="/register">
+        <input type="hidden" name="lang" value="{{ lang }}">
+
+        <!-- Name -->
+        <div class="field-group">
+          <label class="field-label">{% if lang == 'hi' %}पूरा नाम{% else %}Full Name{% endif %}</label>
+          <input type="text" name="name"
+            placeholder="{% if lang == 'hi' %}अपना पूरा नाम लिखें{% else %}Enter your full name{% endif %}" required>
+        </div>
+
+        <!-- Mobile -->
+        <div class="field-group">
+          <label class="field-label">{% if lang == 'hi' %}मोबाइल नंबर{% else %}Mobile Number{% endif %}</label>
+          <input type="text" name="mobile" id="signup-mobile"
+            placeholder="{% if lang == 'hi' %}10 अंकों का नंबर{% else %}10-digit mobile number{% endif %}"
+            required maxlength="10" pattern="[0-9]{10}" inputmode="numeric">
+        </div>
+
+        <!-- Password -->
+        <div class="field-group">
+          <label class="field-label">{% if lang == 'hi' %}पासवर्ड बनाएं{% else %}Create Password{% endif %}</label>
+          <input type="password" name="password"
+            placeholder="{% if lang == 'hi' %}कम से कम 6 अक्षर{% else %}At least 6 characters{% endif %}"
+            required minlength="6">
+        </div>
+
+        <!-- OTP -->
+        <div class="field-group">
+          <label class="field-label">{% if lang == 'hi' %}OTP सत्यापन{% else %}OTP Verification{% endif %}</label>
+          <div class="otp-row">
+            <input type="text" name="otp" id="signup-otp"
+              placeholder="{% if lang == 'hi' %}6 अंकों का OTP{% else %}6-digit OTP{% endif %}"
+              maxlength="6" pattern="[0-9]{6}" required inputmode="numeric">
+            <button type="button" class="send-otp-btn" onclick="sendOtp('signup')">
+              {% if lang == 'hi' %}OTP भेजें{% else %}Send OTP{% endif %}
+            </button>
+          </div>
+          <div class="otp-notice" id="signup-otp-notice">
+            {% if lang == 'hi' %}OTP भेज दिया गया है{% else %}OTP sent to your number{% endif %}
+          </div>
+          <div class="otp-countdown" id="signup-countdown"></div>
+        </div>
+
+        <!-- State -->
+        <div class="field-group">
+          <label class="field-label">{% if lang == 'hi' %}राज्य{% else %}State{% endif %}</label>
+          <select name="state" id="signup-state" onchange="loadDistricts(this,'signup-district')">
+            <option value="">{% if lang == 'hi' %}-- राज्य चुनें --{% else %}-- Select State --{% endif %}</option>
+            {% for state in states %}
+            <option value="{{ state }}">
+              {% if lang == 'hi' %}{{ statesHindi.get(state, state) if statesHindi else state }}{% else %}{{ state }}{% endif %}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- District -->
+        <div class="field-group">
+          <label class="field-label">{% if lang == 'hi' %}जिला{% else %}District{% endif %}</label>
+          <select name="district" id="signup-district" required>
+            <option value="">{% if lang == 'hi' %}-- जिला चुनें --{% else %}-- Select District --{% endif %}</option>
+          </select>
+        </div>
+
+        <button type="submit" class="submit-btn">
+          {% if lang == 'hi' %}खाता बनाएं{% else %}Create Account{% endif %}
+        </button>
+      </form>
+
+      <p style="text-align:center;margin-top:16px;font-size:.88rem;color:#888;font-weight:600;">
+        {% if lang == 'hi' %}पहले से खाता है?
+          <a href="#" onclick="switchTabByName('signin')" style="color:var(--green-mid);">साइन इन करें</a>
+        {% else %}Already have an account?
+          <a href="#" onclick="switchTabByName('signin')" style="color:var(--green-mid);">Sign in</a>
+        {% endif %}
+      </p>
+    </div>
+
+    <a href="/schemes" class="schemes-link">
+      {% if lang == 'hi' %}सरकारी योजनाएं देखें{% else %}View Government Schemes{% endif %}
+    </a>
+  </div><!-- /right-panel -->
+</div><!-- /page-layout -->
+
+<a href="/support" class="support-btn">
+  {% if lang == 'hi' %}सहायता{% else %}Support{% endif %}
+</a>
+
+<script>
+  const statesData      = {{ states_json | safe }};
+  const statesHindi     = {{ states_hindi_json | safe }};
+  const districtsHindi  = {{ districts_hindi_json | safe }};
+  const currentLang     = "{{ lang }}";
+
+  // ── Tab switching ──────────────────────────────────────────────────────────
+  function switchTab(tab, btn) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.form-section').forEach(s => s.classList.remove('active'));
+    document.getElementById('section-' + tab).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  function switchTabByName(tab) {
+    const btns = document.querySelectorAll('.tab-btn');
+    const idx  = tab === 'signin' ? 0 : 1;
+    switchTab(tab, btns[idx]);
+  }
+
+  // ── District loader (Hindi-aware) ──────────────────────────────────────────
+  function loadDistricts(selectEl, targetId) {
+    const state      = selectEl.value;
+    const distSel    = document.getElementById(targetId);
+    const placeholder = currentLang === 'hi' ? '-- जिला चुनें --' : '-- Select District --';
+    distSel.innerHTML = `<option value="">${placeholder}</option>`;
+    if (state && statesData[state]) {
+      statesData[state].forEach(d => {
+        const opt       = document.createElement('option');
+        opt.value       = d;
+        opt.textContent = (currentLang === 'hi' && districtsHindi[d]) ? districtsHindi[d] : d;
+        distSel.appendChild(opt);
+      });
+    }
+  }
+
+  // ── OTP AJAX (signup only) ─────────────────────────────────────────────────
+  const countdownTimers = {};
+
+  function sendOtp(prefix) {
+    const mobile = document.getElementById(prefix + '-mobile').value.trim();
+    const errMsg = currentLang === 'hi'
+      ? 'कृपया सही 10 अंकों का मोबाइल नंबर दर्ज करें।'
+      : 'Please enter a valid 10-digit mobile number.';
+    if (!/^\d{10}$/.test(mobile)) { alert(errMsg); return; }
+
+    const btn = document.querySelector('#section-' + prefix + ' .send-otp-btn');
+    btn.disabled = true;
+    btn.textContent = currentLang === 'hi' ? 'भेज रहे हैं...' : 'Sending...';
+
+    fetch('/send_otp', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({mobile})
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        document.getElementById(prefix + '-otp-notice').classList.add('show');
+        startCountdown(prefix, btn);
+      } else if (data.already_registered) {
+        // Switch to signin tab if user already exists
+        alert(data.error);
+        switchTabByName('signin');
+        const signinMobile = document.getElementById('signin-mobile');
+        if (signinMobile) signinMobile.value = mobile;
+        btn.disabled = false;
+        btn.textContent = currentLang === 'hi' ? 'OTP भेजें' : 'Send OTP';
+      } else {
+        alert((currentLang === 'hi' ? 'OTP भेजने में त्रुटि: ' : 'Failed to send OTP: ')
+              + (data.error || ''));
+        btn.disabled = false;
+        btn.textContent = currentLang === 'hi' ? 'OTP भेजें' : 'Send OTP';
+      }
+    })
+    .catch(() => {
+      alert(currentLang === 'hi' ? 'नेटवर्क त्रुटि।' : 'Network error. Try again.');
+      btn.disabled = false;
+      btn.textContent = currentLang === 'hi' ? 'OTP भेजें' : 'Send OTP';
+    });
+  }
+
+  function startCountdown(prefix, btn) {
+    let secs = 60;
+    const countEl = document.getElementById(prefix + '-countdown');
+    countEl.classList.add('show');
+    if (countdownTimers[prefix]) clearInterval(countdownTimers[prefix]);
+    countdownTimers[prefix] = setInterval(() => {
+      countEl.textContent = currentLang === 'hi'
+        ? `${secs} सेकंड में पुनः भेजें`
+        : `Resend OTP in ${secs}s`;
+      secs--;
+      if (secs < 0) {
+        clearInterval(countdownTimers[prefix]);
+        countEl.classList.remove('show');
+        btn.disabled = false;
+        btn.textContent = currentLang === 'hi' ? 'OTP दोबारा भेजें' : 'Resend OTP';
+      }
+    }, 1000);
+  }
+
+  // ── Phone validation: only allow digits ───────────────────────────────────
+  document.querySelectorAll('input[name="mobile"]').forEach(el => {
+    el.addEventListener('input', function() {
+      this.value = this.value.replace(/\D/g, '').slice(0, 10);
+    });
+  });
+</script>
+</body>
+</html>

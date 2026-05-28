@@ -1,0 +1,56 @@
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+.Python
+
+# ── Virtual Environments ───────────────────────────────────────────────────────
+venv/
+env/
+.env/
+ENV/
+.venv/
+
+# ── Environment Variables (NEVER commit these) ─────────────────────────────────
+.env
+.flaskenv
+*.env
+
+# ── Sensitive User Data ────────────────────────────────────────────────────────
+user details/
+user_details/
+
+# ── User Database (contains real user data) ───────────────────────────────────
+# users.csv is kept but should only contain the header row
+# Actual user records must never be committed
+# Uncomment below to ignore entirely:
+# users.csv
+
+# ── ML Model (large binary file — store in Git LFS or release assets) ─────────
+# model.pkl
+
+# ── IDE & OS ──────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ── Flask & Testing ────────────────────────────────────────────────────────────
+instance/
+.webassets-cache
+*.log
+
+# ── Distribution / Packaging ──────────────────────────────────────────────────
+dist/
+build/
+*.egg-info/
+.eggs/
+
+# ── Coverage & Testing ────────────────────────────────────────────────────────
+.coverage
+htmlcov/
+.pytest_cache/

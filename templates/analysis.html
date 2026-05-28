@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>{% if lang == 'hi' %}फसल विश्लेषण{% else %}Crop Analysis{% endif %}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Yatra+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green-deep: #1a4d2e;
+    --green-mid: #2e7d4f;
+    --green-bright: #4caf73;
+    --gold: #f5c842;
+    --text-dark: #1a2e1a;
+    --border: #c8e6c9;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    min-height: 100vh; background: #e8f5e9;
+    font-family: 'Nunito', sans-serif;
+    padding: 28px 18px 90px;
+    position: relative; overflow-x: hidden;
+  }
+  .bg-pattern {
+    position: fixed; inset: 0; z-index: 0;
+    background:
+      radial-gradient(ellipse at 80% 10%, rgba(76,175,115,0.20) 0%, transparent 55%),
+      radial-gradient(ellipse at 10% 90%, rgba(245,200,66,0.10) 0%, transparent 55%),
+      linear-gradient(160deg, #c8e6c9 0%, #e8f5e9 50%, #f1f8e9 100%);
+  }
+  .nature-header {
+    position: fixed; top: 0; left: 0; right: 0; height: 6px;
+    background: linear-gradient(90deg, var(--green-mid), var(--green-bright), var(--gold), var(--green-bright), var(--green-mid));
+    z-index: 20;
+  }
+  .container { position: relative; z-index: 10; max-width: 580px; margin: 0 auto; }
+  .top-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; }
+  .brand-pill {
+    display: flex; align-items: center; gap: 8px; background: white;
+    border: 1.5px solid var(--border); border-radius: 30px; padding: 8px 18px;
+    color: var(--green-deep); font-family: 'Yatra One', cursive; font-size: 1.05rem;
+    box-shadow: 0 2px 12px rgba(46,125,79,0.12); text-decoration: none;
+  }
+  .back-btn {
+    display: flex; align-items: center; gap: 6px; background: white;
+    border: 1.5px solid var(--border); border-radius: 30px; padding: 8px 16px;
+    color: var(--green-mid); font-size: 0.88rem; font-weight: 800;
+    text-decoration: none; transition: 0.2s;
+    box-shadow: 0 2px 8px rgba(46,125,79,0.10); margin-left: auto;
+  }
+  .back-btn:hover { background: #edfbf1; border-color: var(--green-bright); }
+
+  /* Form card */
+  .form-card {
+    background: white; border-radius: 24px; overflow: hidden;
+    box-shadow: 0 16px 48px rgba(46,125,79,0.14), 0 0 0 1.5px var(--border);
+    margin-bottom: 20px;
+    animation: riseIn 0.6s cubic-bezier(.16,1,.3,1) both;
+  }
+  @keyframes riseIn {
+    from { opacity:0; transform:translateY(24px); }
+    to { opacity:1; transform:translateY(0); }
+  }
+  .card-header {
+    background: linear-gradient(135deg, var(--green-mid), var(--green-deep));
+    padding: 22px 28px; color: white;
+    display: flex; align-items: center; gap: 14px;
+    position: relative; overflow: hidden;
+  }
+  .card-header::after {
+    content: '📅'; position: absolute; right: 22px; top: 50%;
+    transform: translateY(-50%); font-size: 2.4rem; opacity: 0.15;
+  }
+  .header-icon { font-size: 2rem; }
+  .header-title { font-size: 1.25rem; font-weight: 900; }
+  .header-sub { font-size: 0.82rem; opacity: 0.78; font-weight: 600; }
+  .card-body { padding: 26px 28px 28px; }
+
+  .field-label-text {
+    font-size: 0.85rem; font-weight: 900; color: #555;
+    text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 10px;
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  /* Crop grid */
+  .crop-select-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 20px;
+  }
+  .crop-radio { display: none; }
+  .crop-radio-label {
+    display: flex; flex-direction: column; align-items: center; gap: 5px;
+    padding: 12px 5px; border: 2px solid var(--border); border-radius: 12px;
+    cursor: pointer; transition: 0.2s; background: #f9fdf9; text-align: center;
+  }
+  .crop-radio:checked + .crop-radio-label {
+    border-color: var(--green-bright); background: #edfbf1;
+    box-shadow: 0 0 0 3px rgba(76,175,115,0.18);
+  }
+  .crop-radio-label:hover { border-color: #a5d6a7; background: #f4fbf6; }
+  .cr-emoji { font-size: 1.4rem; }
+  .cr-name { font-size: 0.62rem; font-weight: 800; color: var(--text-dark); line-height: 1.2; }
+
+  /* Irrigation toggle */
+  .irr-toggle-row {
+    display: flex; align-items: center; gap: 14px;
+    background: #f6fdf8; border: 2px solid var(--border);
+    border-radius: 14px; padding: 14px 18px; margin-bottom: 20px;
+    cursor: pointer; transition: 0.2s;
+  }
+  .irr-toggle-row:hover { border-color: var(--green-bright); }
+  .irr-toggle-row input[type="checkbox"] { display: none; }
+  .toggle-pill {
+    width: 46px; height: 26px; border-radius: 13px;
+    background: #ccc; position: relative; flex-shrink: 0; transition: 0.3s;
+  }
+  .toggle-pill::after {
+    content: ''; position: absolute; top: 3px; left: 3px;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: white; transition: 0.3s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  }
+  .toggle-active .toggle-pill { background: var(--green-bright); }
+  .toggle-active .toggle-pill::after { left: 23px; }
+  .irr-toggle-text { font-size: 0.92rem; font-weight: 800; color: var(--text-dark); }
+  .irr-toggle-sub { font-size: 0.78rem; color: #999; font-weight: 600; }
+
+  .submit-btn {
+    width: 100%; padding: 16px;
+    background: linear-gradient(135deg, var(--green-bright), var(--green-mid));
+    color: white; border: none; border-radius: 14px;
+    font-size: 1.05rem; font-weight: 900;
+    font-family: 'Nunito', sans-serif; cursor: pointer; transition: 0.22s;
+    box-shadow: 0 8px 24px rgba(46,125,79,0.35);
+  }
+  .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(46,125,79,0.45); }
+
+  /* Result */
+  .result-area { display: none; }
+  .result-area.show { display: block; animation: riseIn 0.5s ease both; }
+
+  .summary-banner {
+    border-radius: 20px; padding: 24px 26px; margin-bottom: 18px;
+    display: flex; align-items: center; gap: 18px; border: 2.5px solid;
+  }
+  .summary-banner.good { background: #edfbf1; border-color: var(--green-bright); }
+  .summary-banner.moderate { background: #fffbea; border-color: var(--gold); }
+  .summary-banner.danger { background: #fff3f3; border-color: #e57373; }
+  .banner-icon { font-size: 3rem; flex-shrink: 0; }
+  .banner-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.2px; font-weight: 900; margin-bottom: 4px; }
+  .banner-label.good { color: var(--green-mid); }
+  .banner-label.moderate { color: #a07000; }
+  .banner-label.danger { color: #c0392b; }
+  .banner-status { font-family: 'Yatra One', cursive; font-size: 1.6rem; }
+  .banner-status.good { color: var(--green-deep); }
+  .banner-status.moderate { color: #7a5c00; }
+  .banner-status.danger { color: #c0392b; }
+  .banner-sub { font-size: 0.83rem; font-weight: 700; color: #666; margin-top: 4px; line-height: 1.5; }
+
+  /* Crop info card */
+  .crop-info-card {
+    background: white; border-radius: 18px; padding: 20px 22px;
+    margin-bottom: 18px; border: 1.5px solid var(--border);
+    box-shadow: 0 4px 16px rgba(46,125,79,0.08);
+  }
+  .crop-info-header {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 12px;
+  }
+  .crop-big-emoji { font-size: 2.4rem; }
+  .crop-name-en { font-size: 1.2rem; font-weight: 900; color: var(--green-deep); }
+  .crop-name-hi { font-size: 0.88rem; color: #888; font-weight: 700; }
+  .crop-desc-text {
+    font-size: 0.88rem; color: #555; line-height: 1.75; font-weight: 600;
+    border-top: 1.5px solid #f0f0f0; padding-top: 12px;
+  }
+
+  /* Irrigation result card */
+  .irr-result-card {
+    border-radius: 18px; padding: 18px 22px; margin-bottom: 18px;
+    border: 2px solid;
+  }
+  .irr-result-card.active { background: #edfbf1; border-color: var(--green-bright); }
+  .irr-result-card.inactive { background: #fff8e1; border-color: var(--gold); }
+  .irr-result-card.none { background: #f3f3f3; border-color: #bbb; }
+  .irr-result-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .irr-result-icon { font-size: 1.6rem; }
+  .irr-result-title { font-size: 0.95rem; font-weight: 900; }
+  .irr-stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  .irr-stat { background: rgba(255,255,255,0.7); border-radius: 10px; padding: 10px 14px; text-align: center; }
+  .irr-stat-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.5px; color: #999; font-weight: 800; }
+  .irr-stat-val { font-size: 1.1rem; font-weight: 900; color: var(--green-mid); }
+  .irr-freq-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,0.8); border-radius: 10px;
+    padding: 10px 16px; font-size: 0.88rem; font-weight: 800;
+    color: var(--green-deep);
+  }
+
+  /* Days grid */
+  .days-title {
+    font-size: 0.82rem; text-transform: uppercase; letter-spacing: 1px;
+    color: #999; font-weight: 900; margin-bottom: 12px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .days-grid {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 18px;
+  }
+  .day-card {
+    background: white; border-radius: 14px; padding: 12px 6px;
+    text-align: center; border: 2px solid var(--border);
+    box-shadow: 0 2px 10px rgba(46,125,79,0.08); transition: 0.2s;
+  }
+  .day-card:hover { transform: translateY(-2px); }
+  .day-card.ok { border-color: #a5d6a7; background: #f4fbf6; }
+  .day-card.warn { border-color: #ffe082; background: #fffde7; }
+  .day-card.bad { border-color: #ef9a9a; background: #fff3f3; }
+  .day-label { font-size: 0.65rem; font-weight: 900; color: #aaa; text-transform: uppercase; margin-bottom: 4px; }
+  .day-temp { font-size: 0.85rem; font-weight: 900; color: var(--text-dark); margin-bottom: 4px; }
+  .day-icon { font-size: 1.2rem; margin-bottom: 3px; display: block; }
+  .day-status { font-size: 0.6rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; }
+  .day-status.ok { color: var(--green-mid); }
+  .day-status.warn { color: #a07000; }
+  .day-status.bad { color: #c0392b; }
+
+  /* Stats row */
+  .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 18px; }
+  .stat-card {
+    background: white; border: 1.5px solid var(--border); border-radius: 14px;
+    padding: 16px 10px; text-align: center;
+  }
+  .stat-icon { font-size: 1.3rem; display: block; margin-bottom: 5px; }
+  .stat-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.6px; color: #aaa; font-weight: 800; display: block; }
+  .stat-val { font-size: 1.05rem; font-weight: 900; color: var(--green-mid); }
+
+  /* Ideal conditions */
+  .ideal-card {
+    background: white; border-radius: 18px; padding: 18px 22px;
+    margin-bottom: 18px; border: 1.5px solid var(--border);
+  }
+  .ideal-title { font-size: 0.82rem; text-transform: uppercase; letter-spacing: 1px; color: #999; font-weight: 900; margin-bottom: 12px; }
+  .ideal-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .ideal-item { background: #f6fdf8; border-radius: 12px; padding: 12px 10px; text-align: center; border: 1.5px solid #e0f0e4; }
+  .ideal-item-icon { font-size: 1.2rem; display: block; margin-bottom: 4px; }
+  .ideal-item-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.5px; color: #999; font-weight: 800; display: block; }
+  .ideal-item-val { font-size: 0.82rem; font-weight: 900; color: var(--green-deep); }
+
+  .try-again-btn {
+    width: 100%; padding: 14px;
+    background: white; border: 2px solid var(--border); border-radius: 14px;
+    color: var(--green-mid); font-size: 0.95rem; font-weight: 900;
+    font-family: 'Nunito', sans-serif; cursor: pointer; transition: 0.2s;
+  }
+  .try-again-btn:hover { background: #edfbf1; border-color: var(--green-bright); }
+
+  /* Loading */
+  .loading-state {
+    display: none; text-align: center; padding: 30px;
+    background: white; border-radius: 20px;
+    border: 1.5px solid var(--border);
+    box-shadow: 0 8px 24px rgba(46,125,79,0.10);
+  }
+  .loading-state.show { display: block; animation: riseIn 0.4s ease both; }
+  .spinner {
+    width: 48px; height: 48px; border: 5px solid #c8e6c9;
+    border-top-color: var(--green-mid); border-radius: 50%;
+    margin: 0 auto 16px; animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { font-weight: 800; color: var(--green-mid); font-size: 1rem; }
+
+  .support-btn {
+    position: fixed; bottom: 24px; right: 24px;
+    background: linear-gradient(135deg, var(--green-mid), var(--green-deep));
+    color: white; padding: 13px 22px; border-radius: 50px;
+    text-decoration: none; font-size: 15px; font-weight: 800;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.22); z-index: 100; transition: 0.2s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .support-btn:hover { transform: translateY(-2px); }
+
+  @media (max-width: 420px) {
+    .crop-select-grid { grid-template-columns: repeat(3, 1fr); }
+    .days-grid { grid-template-columns: repeat(4, 1fr); }
+    .ideal-row { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  /* ── Language Toggle ── */
+  .lang-toggle {
+    display: flex; align-items: center;
+    background: white; border: 1.5px solid var(--border);
+    border-radius: 30px; overflow: hidden;
+    box-shadow: 0 2px 8px rgba(46,125,79,0.10);
+    flex-shrink: 0;
+  }
+  .lang-toggle a {
+    padding: 7px 14px; text-decoration: none;
+    font-size: 0.82rem; font-weight: 900;
+    color: #aaa; transition: 0.2s;
+    white-space: nowrap;
+  }
+  .lang-toggle a.active {
+    background: linear-gradient(135deg, var(--green-bright), var(--green-mid));
+    color: white; border-radius: 28px;
+    margin: 2px;
+  }
+  .lang-toggle a:not(.active):hover { color: var(--green-mid); }
+
+
+  /* ── Profile Button ─────────────────────────────────────────────────────── */
+  .profile-wrap {
+    position: fixed; bottom: 82px; right: 24px;
+    z-index: 102;
+  }
+  .profile-btn {
+    display: flex; align-items: center; gap: 9px;
+    background: white;
+    border: 2px solid var(--border);
+    border-radius: 50px;
+    padding: 11px 18px 11px 14px;
+    font-size: 0.88rem; font-weight: 900;
+    color: var(--green-deep);
+    cursor: pointer;
+    box-shadow: 0 6px 22px rgba(46,125,79,0.16);
+    transition: 0.22s;
+    white-space: nowrap;
+    font-family: 'Nunito', sans-serif;
+  }
+  .profile-btn:hover {
+    background: #edfbf1; border-color: var(--green-bright);
+    box-shadow: 0 10px 30px rgba(46,125,79,0.24); transform: translateY(-2px);
+  }
+  .profile-avatar {
+    width: 30px; height: 30px;
+    background: linear-gradient(135deg, var(--green-bright), var(--green-mid));
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 0.9rem; color: white; font-weight: 900; flex-shrink: 0;
+  }
+  .profile-chevron { font-size: 0.65rem; color: #aaa; transition: transform 0.2s; margin-left: 2px; }
+  .profile-wrap.open .profile-chevron { transform: rotate(180deg); }
+  .profile-dropdown {
+    position: absolute; bottom: calc(100% + 10px); right: 0;
+    background: white; border: 1.5px solid var(--border); border-radius: 18px;
+    box-shadow: 0 16px 48px rgba(46,125,79,0.18); overflow: hidden; min-width: 190px;
+    opacity: 0; transform: translateY(8px) scale(0.97); pointer-events: none;
+    transition: opacity 0.2s, transform 0.2s; transform-origin: bottom right;
+  }
+  .profile-wrap.open .profile-dropdown { opacity: 1; transform: translateY(0) scale(1); pointer-events: all; }
+  .profile-dropdown-header { padding: 14px 16px 10px; border-bottom: 1px solid var(--border); }
+  .profile-dropdown-name { font-weight: 900; font-size: 0.95rem; color: var(--green-deep); }
+  .profile-dropdown-sub { font-size: 0.76rem; color: #aaa; font-weight: 600; margin-top: 2px; }
+  .profile-dropdown a {
+    display: flex; align-items: center; gap: 11px; padding: 13px 16px;
+    text-decoration: none; font-size: 0.9rem; font-weight: 800;
+    color: var(--text-dark); transition: background 0.15s; border-bottom: 1px solid #f0f0f0;
+  }
+  .profile-dropdown a:last-child { border-bottom: none; }
+  .profile-dropdown a:hover { background: #f4fdf6; color: var(--green-mid); }
+  .profile-dropdown a.logout-link:hover { background: #fff5f5; color: #c62828; }
+  .profile-dropdown-icon { font-size: 1rem; }
+</style>
+</head>
+<body>
+<div class="nature-header"></div>
+<div class="bg-pattern"></div>
+
+<div class="container">
+  <div class="top-bar">
+    <a href="/" class="brand-pill">🌾 Kisan Suvidha</a>
+    <a href="/choose" class="back-btn">← {% if lang == 'hi' %}वापस{% else %}Back{% endif %}</a>
+    <div class="lang-toggle">
+      <a href="{{ request.path }}?lang=en" class="{% if lang != 'hi' %}active{% endif %}">EN</a>
+      <a href="{{ request.path }}?lang=hi" class="{% if lang == 'hi' %}active{% endif %}">हि</a>
+    </div>
+  </div>
+
+  <!-- Form card -->
+  <div class="form-card" id="formCard">
+    <div class="card-header">
+      <span class="header-icon">📊</span>
+      <div>
+        <div class="header-title">{% if lang == 'hi' %}10-दिन फसल विश्लेषण{% else %}10-Day Crop Analysis{% endif %}</div>
+        <div class="header-sub">{% if lang == 'hi' %}मौसम आधारित फसल स्थिति जाँच{% else %}Weather-based suitability check for your crop{% endif %}</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="field-label-text">🌾 {% if lang == 'hi' %}फसल चुनें{% else %}Select a Crop{% endif %}</div>
+      <!-- Crops are injected by JS below -->
+      <div class="crop-select-grid" id="cropGrid"></div>
+
+      <!-- Irrigation toggle -->
+      <div class="field-label-text">💧 {% if lang == 'hi' %}सिंचाई उपलब्धता{% else %}Irrigation Availability{% endif %}</div>
+      <label class="irr-toggle-row" id="irrToggleRow">
+        <input type="checkbox" id="irrCheckbox">
+        <div class="toggle-pill" id="togglePill"></div>
+        <div>
+          <div class="irr-toggle-text" id="irrToggleText">
+            {% if lang == 'hi' %}सिंचाई संभव नहीं{% else %}Irrigation Not Available{% endif %}
+          </div>
+          <div class="irr-toggle-sub">
+            {% if lang == 'hi' %}टॉगल करें यदि आपके पास सिंचाई सुविधा है{% else %}Toggle on if you have irrigation facility{% endif %}
+          </div>
+        </div>
+      </label>
+
+      <button class="submit-btn" onclick="runAnalysis()">
+        {% if lang == 'hi' %}फसल विश्लेषण करें 🔍{% else %}Analyse Crop 🔍{% endif %}
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-state" id="loadingState">
+    <div class="spinner"></div>
+    <div class="loading-text">{% if lang == 'hi' %}मौसम डेटा प्राप्त हो रहा है...{% else %}Fetching 10-day weather data...{% endif %}</div>
+  </div>
+
+  <!-- Result -->
+  <div class="result-area" id="resultArea">
+
+    <!-- Summary banner -->
+    <div class="summary-banner" id="summaryBanner">
+      <div class="banner-icon" id="bannerIcon"></div>
+      <div>
+        <div class="banner-label" id="bannerLabel"></div>
+        <div class="banner-status" id="bannerStatus"></div>
+        <div class="banner-sub" id="bannerSub"></div>
+      </div>
+    </div>
+
+    <!-- Crop info + description -->
+    <div class="crop-info-card" id="cropInfoCard">
+      <div class="crop-info-header">
+        <span class="crop-big-emoji" id="cropBigEmoji"></span>
+        <div>
+          <div class="crop-name-en" id="cropNameEn"></div>
+          <div class="crop-name-hi" id="cropNameHi"></div>
+        </div>
+      </div>
+      <div class="crop-desc-text" id="cropDescText"></div>
+    </div>
+
+    <!-- Day-by-day -->
+    <div class="days-title">📅 {% if lang == 'hi' %}दिन-वार मौसम स्थिति{% else %}Day-by-Day Weather Status{% endif %}</div>
+    <div class="days-grid" id="daysGrid"></div>
+
+    <!-- Stats -->
+    <div class="stats-row" id="statsRow"></div>
+
+    <!-- Irrigation result -->
+    <div class="irr-result-card" id="irrResultCard">
+      <div class="irr-result-header">
+        <span class="irr-result-icon" id="irrResultIcon"></span>
+        <span class="irr-result-title" id="irrResultTitle"></span>
+      </div>
+      <div class="irr-stats-row" id="irrStatsRow"></div>
+      <div class="irr-freq-badge" id="irrFreqBadge"></div>
+    </div>
+
+    <!-- Ideal conditions -->
+    <div class="ideal-card" id="idealCard">
+      <div class="ideal-title">🎯 {% if lang == 'hi' %}आदर्श परिस्थितियाँ{% else %}Ideal Conditions for This Crop{% endif %}</div>
+      <div class="ideal-row" id="idealRow"></div>
+    </div>
+
+    <button class="try-again-btn" onclick="resetForm()">
+      🔄 {% if lang == 'hi' %}दूसरी फसल विश्लेषण करें{% else %}Analyse Another Crop{% endif %}
+    </button>
+  </div>
+
+</div>
+
+<a href="/support" class="support-btn">🤝 {% if lang == 'hi' %}सहायता{% else %}Support{% endif %}</a>
+
+<script>
+const DISTRICT = "{{ district }}";
+const API_KEY  = "0bbb8047eb5102aa875c9b874b02b6eb";
+const LANG     = "{{ lang }}";
+const isHindi  = LANG === 'hi';
+
+// ── Crop metadata ─────────────────────────────────────────────────────────────
+const CROPS = {
+  rice:        { emoji:"🍚",  en:"Rice",         hi:"चावल"       },
+  maize:       { emoji:"🌽",  en:"Maize",        hi:"मक्का"      },
+  chickpea:    { emoji:"🫘",  en:"Chickpea",     hi:"चना"        },
+  kidneybeans: { emoji:"🫘",  en:"Kidney Beans", hi:"राजमा"      },
+  pigeonpeas:  { emoji:"🌿",  en:"Pigeon Peas",  hi:"अरहर"       },
+  mothbeans:   { emoji:"🫘",  en:"Moth Beans",   hi:"मोठ"        },
+  mungbean:    { emoji:"🟢",  en:"Mung Bean",    hi:"मूंग"       },
+  blackgram:   { emoji:"⚫",  en:"Black Gram",   hi:"उड़द"       },
+  lentil:      { emoji:"🫘",  en:"Lentil",       hi:"मसूर"       },
+  pomegranate: { emoji:"🍎",  en:"Pomegranate",  hi:"अनार"       },
+  banana:      { emoji:"🍌",  en:"Banana",       hi:"केला"        },
+  mango:       { emoji:"🥭",  en:"Mango",        hi:"आम"          },
+  grapes:      { emoji:"🍇",  en:"Grapes",       hi:"अंगूर"      },
+  watermelon:  { emoji:"🍉",  en:"Watermelon",   hi:"तरबूज"      },
+  muskmelon:   { emoji:"🍈",  en:"Muskmelon",    hi:"खरबूजा"     },
+  apple:       { emoji:"🍎",  en:"Apple",        hi:"सेब"         },
+  orange:      { emoji:"🍊",  en:"Orange",       hi:"संतरा"      },
+  papaya:      { emoji:"🍑",  en:"Papaya",       hi:"पपीता"      },
+  coconut:     { emoji:"🥥",  en:"Coconut",      hi:"नारियल"     },
+  cotton:      { emoji:"☁️", en:"Cotton",       hi:"कपास"        },
+  jute:        { emoji:"🌱",  en:"Jute",         hi:"जूट"        },
+  coffee:      { emoji:"☕",  en:"Coffee",       hi:"कॉफी"       }
+};
+
+// ── Descriptions (English) ────────────────────────────────────────────────────
+const CROP_DESC_EN = {
+  rice:        "Rice is a staple cereal crop that thrives in warm, humid climates with abundant water. It is the primary food source for over half the world's population and grows best in waterlogged or flooded paddy fields. Rice requires 20–35°C, heavy rainfall or continuous irrigation, and fertile clay soils. Common varieties include Basmati, Sona Masuri, and IR-36.",
+  maize:       "Maize (corn) is a versatile cereal used for food, fodder, starch, and industry. It grows rapidly in warm weather and needs well-drained fertile soil with 60–110 mm monthly rainfall. Sensitive to frost and waterlogging. Modern hybrids yield 5–8 tonnes/hectare. It is also a key ingredient in animal feed and ethanol production.",
+  chickpea:    "Chickpea is a cool-season legume rich in protein and fiber. It fixes atmospheric nitrogen, improving soil fertility. Highly drought-tolerant, ideal for dry Rabi seasons. Grows best at 15–25°C in low-humidity, well-drained loamy soils. Madhya Pradesh, Rajasthan, and Maharashtra are top producers. Used in dal, besan, and snacks.",
+  kidneybeans: "Kidney beans (Rajma) prefer cool temperatures of 15–25°C and well-drained loamy soils. They improve soil fertility through nitrogen fixation. Grown extensively in Himachal Pradesh, Uttarakhand, and Jammu & Kashmir. Matures in 90–120 days, yielding 1–2 tonnes/hectare. A staple in North Indian cuisine.",
+  pigeonpeas:  "Pigeon peas (Arhar/Tur dal) are drought-tolerant legumes widely grown in tropical and semi-arid regions. They fix nitrogen, improve soil health, and serve as food and fodder. They can grow in poor soils and tolerate temperatures up to 37°C. Maharashtra, UP, Karnataka are major producers. Matures in 150–180 days.",
+  mothbeans:   "Moth beans are extremely drought-resistant and grow in arid, sandy soils where few crops survive. A key pulse in Rajasthan and Gujarat, thriving at up to 40°C with only 30–75 mm monthly water. Matures quickly in 60–90 days. Seeds are used in dal, sprouts, and fermented foods. Important for desert food security.",
+  mungbean:    "Mung beans (moong) are a short-duration warm-season legume, highly nutritious and quick to mature (60–75 days). They improve soil structure through nitrogen fixation. Grows best at 27–30°C with moderate-high humidity. Sensitive to waterlogging. Grown in both Kharif and Zaid seasons. Most digestible legume in Indian diets.",
+  blackgram:   "Black gram (Urad dal) is a warm-season legume essential to South Indian cuisine. Thrives in humid tropical conditions at 25–35°C. Grown in Kharif across Andhra Pradesh, Tamil Nadu, and Madhya Pradesh. Matures in 70–90 days. Key ingredient in idli, dosa, vada, and various dals. Rich in protein.",
+  lentil:      "Lentils (Masoor dal) are a cool-season legume, drought-tolerant and nitrogen-fixing. They grow best in light, well-drained soils at 18–30°C. A Rabi crop in UP, MP, Bihar, and West Bengal. Matures in 100–120 days. Rich in protein, iron, and folate. Among the oldest cultivated crops in the world.",
+  pomegranate: "Pomegranate is a hardy fruit tree tolerating drought and high temperatures, ideal for semi-arid climates. Grows in well-drained soils at 18–25°C with low humidity. Maharashtra (Solapur), Karnataka, Gujarat are major producers. Rich in antioxidants and vitamins. A single tree fruits for 15–20 years.",
+  banana:      "Banana is a tropical fruit requiring warm temperatures (25–30°C), high humidity, and plenty of water. India is the world's largest producer. Andhra Pradesh, Tamil Nadu, Karnataka are top states. Plants mature in 9–12 months and produce bunches of 100–200 fruits. Rich in potassium and Vitamin B6.",
+  mango:       "Mango is India's national fruit. Thrives in hot, dry weather during flowering at 27–36°C in deep, well-drained alluvial soils. UP, Andhra Pradesh, Karnataka are major producers. Varieties like Alphonso, Dasheri, Langra have global fame. A mango tree produces fruit for 40–50 years.",
+  grapes:      "Grapes are grown in a wide climate range (9–42°C). They prefer dry summers and mild winters, needing well-drained sandy loam soils. Maharashtra (Nashik) produces 80% of India's grapes. Harvested Feb–May. Used fresh, for wine, raisins, and juice. Indian grapes are exported to the UK and the Middle East.",
+  watermelon:  "Watermelon grows best in hot, dry climates at 24–27°C with plenty of sunlight. Needs sandy loam soil, good drainage, and drip irrigation. A Zaid crop (Mar–Jun) in UP, Andhra Pradesh, Tamil Nadu. Matures in 70–90 days. 92% water content, rich in lycopene and Vitamin C. High summer demand.",
+  muskmelon:   "Muskmelon (Kharbooja) thrives in hot, dry weather at 27–30°C with low humidity and well-drained sandy soil. Grown in Zaid season in UP, Punjab, Rajasthan. Matures in 75–100 days. Rich in Vitamin A, C, and potassium. Very low water requirement (20–30 mm/month) makes it ideal for dry regions.",
+  apple:       "Apple is a temperate fruit requiring cool winters for dormancy and moderate temperatures (21–24°C) during development. Grows best in Himachal Pradesh, J&K, and Uttarakhand. A well-managed orchard yields 20–30 tonnes/hectare and stays productive for 30–40 years. Shimla apples are world-famous.",
+  orange:      "Oranges need mild climates (10–35°C) with distinct seasons and well-drained soils. Nagpur (Maharashtra) is the 'Orange City' of India. Rich in Vitamin C. India exports to Bangladesh, Nepal, and the Gulf. Takes 3–5 years from planting to first fruit. Requires full sunlight for sweetness.",
+  papaya:      "Papaya is a fast-growing tropical fruit producing fruit year-round at 23–44°C. Starts bearing in 6–9 months. Sensitive to frost and waterlogging. Andhra Pradesh, Karnataka, Gujarat are top producers. Rich in Vitamin C, folate, and the enzyme papain, supporting digestion and immunity.",
+  coconut:     "Coconut palm thrives at 25–30°C with very high humidity (90–100%). Tolerates saline soils and strong winds, ideal for India's coastal belts. Kerala is the top producer. Every part of the tree has value. Begins bearing fruit in 6–10 years and can produce for over 60 years.",
+  cotton:      "Cotton is India's most important fibre crop. Grows in warm, semi-arid conditions at 22–26°C with at least 180 frost-free days. Heavy black soils of Maharashtra, Gujarat, Telangana are ideal. India is the world's largest cotton producer. Supports 60 million farmers and textile workers.",
+  jute:        "Jute is India's 'Golden Fibre'. Grows in warm, humid climates at 23–27°C with 150–200 mm monthly rainfall in alluvial flood plains. West Bengal and Assam produce 90%+ of India's jute. Matures in 120–150 days. Used for sacks, rope, carpet, and eco-friendly packaging. 100% biodegradable.",
+  coffee:      "Coffee is a tropical plantation crop grown in hilly regions at 23–28°C with high rainfall. Karnataka (Coorg, Chikmagalur) produces 70%+ of India's coffee. Plants take 3–5 years to bear berries and remain productive for 20–30 years. Indian coffee is celebrated globally for distinct flavour profiles."
+};
+
+// ── Descriptions (Hindi) ──────────────────────────────────────────────────────
+const CROP_DESC_HI = {
+  rice:        "चावल एक मुख्य अनाज फसल है जो गर्म और आर्द्र जलवायु में खूब पानी के साथ पनपती है। दुनिया की आधी से अधिक आबादी का प्राथमिक भोजन। 20–35°C तापमान, भारी वर्षा और उपजाऊ मिट्टी चाहिए। खरीफ मौसम में उगाई जाती है। बासमती, सोना मसूरी और IR-36 प्रमुख किस्में हैं।",
+  maize:       "मक्का एक बहुउपयोगी अनाज फसल है — भोजन, पशुचारा, स्टार्च और उद्योग में काम आती है। गर्म मौसम में तेज़ी से बढ़ती है। 60–110 मिमी मासिक वर्षा और अच्छी जल निकासी वाली उपजाऊ मिट्टी चाहिए। पाले से संवेदनशील। आधुनिक हाइब्रिड किस्में 5–8 टन/हेक्टेयर उपज देती हैं।",
+  chickpea:    "चना एक ठंडे मौसम की प्रोटीनयुक्त दलहन है। मिट्टी में नाइट्रोजन स्थिर करती है। सूखा-सहिष्णु, रबी मौसम के लिए आदर्श। 15–25°C और कम आर्द्रता में अच्छी जल निकासी वाली मिट्टी में उगती है। मध्य प्रदेश, राजस्थान और महाराष्ट्र प्रमुख उत्पादक। दाल, बेसन और नाश्ते में उपयोग।",
+  kidneybeans: "राजमा 15–25°C के ठंडे तापमान में अच्छी जल निकासी वाली दोमट मिट्टी में उगती है। नाइट्रोजन स्थिरीकरण से मिट्टी की उर्वरता बढ़ाती है। हिमाचल प्रदेश, उत्तराखंड और जम्मू-कश्मीर में व्यापक रूप से उगाई जाती है। 90–120 दिनों में पकती है। उत्तर भारतीय व्यंजनों का अनिवार्य हिस्सा।",
+  pigeonpeas:  "अरहर (तुअर दाल) एक सूखा-सहिष्णु दलहन है जो उष्णकटिबंधीय और अर्ध-शुष्क क्षेत्रों में उगती है। नाइट्रोजन स्थिर करती है और मिट्टी स्वास्थ्य सुधारती है। खराब मिट्टी में 37°C तक सहन कर सकती है। महाराष्ट्र, उत्तर प्रदेश और कर्नाटक प्रमुख उत्पादक। 150–180 दिनों में पकती है।",
+  mothbeans:   "मोठ अत्यधिक सूखा-प्रतिरोधी है — शुष्क, रेतीली मिट्टी में 40°C तक और मात्र 30–75 मिमी पानी में उगती है। राजस्थान और गुजरात की प्रमुख दलहन। 60–90 दिनों में पक जाती है। दाल, अंकुरित और किण्वित खाद्य पदार्थों में उपयोग। रेगिस्तानी क्षेत्रों की खाद्य सुरक्षा के लिए महत्वपूर्ण।",
+  mungbean:    "मूंग एक कम अवधि की गर्म मौसम की दलहन है — 60–75 दिनों में पकती है। नाइट्रोजन स्थिरीकरण से मिट्टी सुधारती है। 27–30°C और मध्यम आर्द्रता में पनपती है। जलभराव से संवेदनशील। खरीफ और जायद दोनों मौसमों में उगाई जाती है। सबसे अधिक पचनीय दालों में से एक।",
+  blackgram:   "उड़द (काला चना) पूरे भारत में लोकप्रिय है और दक्षिण भारतीय व्यंजनों के लिए अनिवार्य। 25–35°C की आर्द्र उष्णकटिबंधीय परिस्थितियों में पनपती है। आंध्र प्रदेश, तमिलनाडु और मध्य प्रदेश में खरीफ के दौरान उगाई जाती है। 70–90 दिनों में पकती है। इडली, डोसा, वड़ा में मुख्य सामग्री।",
+  lentil:      "मसूर दाल एक ठंडे मौसम की दलहन — सूखा-सहिष्णु और नाइट्रोजन-स्थिरीकरण करने वाली। 18–30°C पर हल्की, अच्छी जल निकासी वाली मिट्टी में उगती है। उत्तर प्रदेश, मध्य प्रदेश और बिहार में रबी की प्रमुख फसल। 100–120 दिनों में पकती है। प्रोटीन, आयरन और फोलेट से भरपूर।",
+  pomegranate: "अनार एक कठोर फल वृक्ष है जो सूखे और उच्च तापमान को सहन करता है। 18–25°C और कम आर्द्रता में अच्छी जल निकासी वाली मिट्टी में उगता है। महाराष्ट्र (सोलापुर), कर्नाटक और गुजरात प्रमुख उत्पादक। एंटीऑक्सीडेंट और विटामिन C से भरपूर। एक वृक्ष 15–20 वर्ष तक फल देता है।",
+  banana:      "केला एक उष्णकटिबंधीय फल फसल है जिसे 25–30°C, उच्च आर्द्रता और पर्याप्त पानी चाहिए। भारत दुनिया का सबसे बड़ा केला उत्पादक है। आंध्र प्रदेश, तमिलनाडु और कर्नाटक शीर्ष राज्य हैं। 9–12 महीनों में पकते हैं। पोटेशियम और विटामिन B6 से भरपूर।",
+  mango:       "आम भारत का राष्ट्रीय फल और 'फलों का राजा' है। 27–36°C के गर्म, शुष्क मौसम में पनपता है। उत्तर प्रदेश, आंध्र प्रदेश और कर्नाटक प्रमुख उत्पादक। अल्फांसो, दशहरी और लंगड़ा जैसी किस्मों की वैश्विक पहचान है। एक आम का पेड़ 40–50 वर्षों तक फल देता है।",
+  grapes:      "अंगूर 9–42°C की विभिन्न जलवायु में उगती है। शुष्क गर्मी और हल्की सर्दी पसंद है। महाराष्ट्र (नासिक) भारत के 80%+ अंगूर का उत्पादन करता है। फरवरी–मई में कटाई। शराब, किशमिश और जूस के लिए उपयोग। भारतीय अंगूर यूके और मध्य पूर्व को निर्यात होते हैं।",
+  watermelon:  "तरबूज गर्म, शुष्क जलवायु में 24–27°C और भरपूर धूप में पनपता है। बलुई दोमट मिट्टी और ड्रिप सिंचाई चाहिए। जायद फसल (मार्च–जून)। 70–90 दिनों में पकता है। 92% जलांश, लाइकोपीन और विटामिन C से भरपूर। गर्मियों में उच्च माँग।",
+  muskmelon:   "खरबूजा 27–30°C के गर्म, शुष्क मौसम में बलुई मिट्टी और भरपूर धूप में उगता है। जायद मौसम में उत्तर प्रदेश, पंजाब, राजस्थान में उगाया जाता है। 75–100 दिनों में पकता है। विटामिन A, C और पोटेशियम से भरपूर। कम पानी की जरूरत (20–30 मिमी/माह)।",
+  apple:       "सेब एक शीतोष्ण फल फसल है जिसे ठंडी सर्दी और 21–24°C तापमान चाहिए। हिमाचल प्रदेश और जम्मू-कश्मीर के पहाड़ी क्षेत्रों में सर्वोत्तम उगता है। एक बाग 20–30 टन/हेक्टेयर उपज देता है और 30–40 वर्षों तक उत्पादक रहता है। शिमला सेब विश्व प्रसिद्ध है।",
+  orange:      "संतरे को 10–35°C के हल्के जलवायु और अच्छी जल निकासी वाली मिट्टी चाहिए। नागपुर को 'संतरों का शहर' कहा जाता है। विटामिन C से भरपूर। भारत बांग्लादेश और खाड़ी देशों को निर्यात करता है। रोपण से पहले फल में 3–5 वर्ष लगते हैं।",
+  papaya:      "पपीता 23–44°C में तेज़ी से बढ़ने वाला उष्णकटिबंधीय फल है। रोपण के 6–9 महीनों में फल देना शुरू। विटामिन C, फोलेट और पपेन एंजाइम से भरपूर। आंध्र प्रदेश, कर्नाटक और गुजरात शीर्ष उत्पादक। एक पौधा 30–50 किग्रा/वर्ष फल देता है।",
+  coconut:     "नारियल का पेड़ 25–30°C और 90–100% आर्द्रता में पनपता है। खारी मिट्टी और तेज़ हवाओं को सहन करता है। केरल शीर्ष उत्पादक है। पेड़ का हर भाग उपयोगी है। 6–10 वर्षों में फल देना शुरू करता है और 60+ वर्षों तक उत्पादन करता है।",
+  cotton:      "कपास भारत की सबसे महत्वपूर्ण रेशा फसल है। 22–26°C के गर्म, अर्ध-शुष्क परिस्थितियों में उगती है। महाराष्ट्र, गुजरात और तेलंगाना की काली मिट्टी आदर्श है। भारत दुनिया का सबसे बड़ा कपास उत्पादक है। 6 करोड़+ किसानों और वस्त्र मजदूरों की आजीविका इस पर निर्भर है।",
+  jute:        "जूट भारत का 'सुनहरा रेशा' है। 23–27°C और 150–200 मिमी मासिक वर्षा में उगती है। पश्चिम बंगाल और असम 90%+ उत्पादन करते हैं। 120–150 दिनों में पकती है। बोरे, रस्सी और पर्यावरण अनुकूल पैकेजिंग में उपयोग। 100% जैवनिम्नीकरणीय।",
+  coffee:      "कॉफी एक उष्णकटिबंधीय बागान फसल है जो 23–28°C पर उच्च वर्षा और आर्द्रता में उगती है। कर्नाटक (कूर्ग, चिकमगलूर) भारत की 70%+ कॉफी उत्पादन करता है। पौधे 3–5 वर्षों में फल देना शुरू करते हैं और 20–30 वर्षों तक उत्पादक रहते हैं।"
+};
+
+const CROP_RULES = {{ crop_rules_json | safe }};
+
+// ── Build crop grid ───────────────────────────────────────────────────────────
+(function buildGrid() {
+  const grid = document.getElementById("cropGrid");
+  let first = true;
+  for (const [key, val] of Object.entries(CROPS)) {
+    const id  = `cr_${key}`;
+    const inp = document.createElement("input");
+    inp.type = "radio"; inp.name = "crop"; inp.value = key;
+    inp.className = "crop-radio"; inp.id = id;
+    if (first) { inp.checked = true; first = false; }
+
+    const lbl = document.createElement("label");
+    lbl.htmlFor = id; lbl.className = "crop-radio-label";
+    // Show Hindi name in label if language is Hindi
+    const displayName = isHindi ? val.hi : val.en;
+    lbl.innerHTML = `<span class="cr-emoji">${val.emoji}</span><span class="cr-name">${displayName}</span>`;
+    grid.appendChild(inp);
+    grid.appendChild(lbl);
+  }
+})();
+
+// ── Irrigation toggle ─────────────────────────────────────────────────────────
+const irrCheckbox   = document.getElementById("irrCheckbox");
+const irrToggleRow  = document.getElementById("irrToggleRow");
+const irrToggleText = document.getElementById("irrToggleText");
+
+irrToggleRow.addEventListener("click", function() {
+  irrCheckbox.checked = !irrCheckbox.checked;
+  updateToggleUI();
+});
+
+function updateToggleUI() {
+  if (irrCheckbox.checked) {
+    irrToggleRow.classList.add("toggle-active");
+    irrToggleText.textContent = isHindi ? "सिंचाई उपलब्ध है ✅" : "Irrigation Available ✅";
+  } else {
+    irrToggleRow.classList.remove("toggle-active");
+    irrToggleText.textContent = isHindi ? "सिंचाई संभव नहीं ❌" : "Irrigation Not Available ❌";
+  }
+}
+
+function getSelectedCrop() {
+  const sel = document.querySelector('input[name="crop"]:checked');
+  return sel ? sel.value : "rice";
+}
+
+function isIrrigationOn() {
+  return irrCheckbox.checked;
+}
+
+// ── Main analysis ─────────────────────────────────────────────────────────────
+async function runAnalysis() {
+  document.getElementById("formCard").style.display = "none";
+  const loading = document.getElementById("loadingState");
+  loading.classList.add("show");
+
+  try {
+    const url = `https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(DISTRICT)},IN&appid=${API_KEY}&units=metric&cnt=40`;
+    const res  = await fetch(url);
+    const data = await res.json();
+    if (!data.list || data.list.length === 0) throw new Error("No data");
+    analyze(getSelectedCrop(), data, isIrrigationOn());
+  } catch(e) {
+    loading.classList.remove("show");
+    document.getElementById("formCard").style.display = "block";
+    alert(isHindi ? 'मौसम डेटा नहीं मिला। इंटरनेट जांचें।' : 'Could not fetch weather data. Check internet connection.');
+  }
+}
+
+function analyze(crop, forecastData, irrigationOn) {
+  document.getElementById("loadingState").classList.remove("show");
+
+  const rules = CROP_RULES[crop];
+  if (!rules) { alert("Crop rules not found!"); return; }
+
+  // Tolerance buffers
+  const TEMP_TOL = 5, HUM_TOL = 15;
+  const tempMin = rules.temp[0] - TEMP_TOL,    tempMax = rules.temp[1] + TEMP_TOL;
+  const humMin  = rules.humidity[0] - HUM_TOL, humMax  = rules.humidity[1] + HUM_TOL;
+
+  // One reading per day — prefer 12:00
+  const dayMap = {};
+  for (const item of forecastData.list) {
+    const date = item.dt_txt.split(" ")[0];
+    if (!dayMap[date]) dayMap[date] = item;
+    else if (item.dt_txt.includes("12:00")) dayMap[date] = item;
+  }
+
+  const days      = Object.entries(dayMap).slice(0, 10);
+  const dNames    = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  const dNamesHi  = ["रवि","सोम","मंगल","बुध","गुरु","शुक्र","शनि"];
+
+  let badDays = 0, warnDays = 0, totalTemp = 0, totalHumidity = 0, totalRain = 0;
+  const dayResults = [];
+
+  for (const [dateStr, item] of days) {
+    const temp     = item.main.temp;
+    const humidity = item.main.humidity;
+    const rain3h   = item.rain ? (item.rain['3h'] || 0) : 0;
+
+    const tempIdeal = temp >= rules.temp[0]     && temp <= rules.temp[1];
+    const humIdeal  = humidity >= rules.humidity[0] && humidity <= rules.humidity[1];
+    const tempOk    = temp >= tempMin && temp <= tempMax;
+    const humOk     = humidity >= humMin && humidity <= humMax;
+
+    let status;
+    if (tempIdeal && humIdeal)  { status = "ok"; }
+    else if (tempOk && humOk)   { status = "warn"; warnDays++; }
+    else                        { status = "bad";  badDays++;  }
+
+    totalTemp     += temp;
+    totalHumidity += humidity;
+    totalRain     += rain3h * 8; // approx daily from 3h reading
+
+    const d         = new Date(dateStr);
+    const dayLabel  = isHindi ? dNamesHi[d.getDay()] : dNames[d.getDay()];
+    const dateLabel = `${d.getDate()}/${d.getMonth()+1}`;
+    const wIcon     = item.weather[0].main === "Rain"         ? "🌧️"
+                    : item.weather[0].main === "Clouds"       ? "☁️"
+                    : item.weather[0].main === "Thunderstorm" ? "⛈️"
+                    : "☀️";
+    dayResults.push({ dayLabel, dateLabel, temp, humidity, wIcon, status });
+  }
+
+  const totalDays = days.length;
+  const avgTemp   = totalTemp     / totalDays;
+  const avgHumid  = totalHumidity / totalDays;
+  const avgRain10 = totalRain     / totalDays; // average daily rain in mm
+  // estimate monthly from daily average
+  const monthlyRain = avgRain10 * 30;
+
+  const riskScore = badDays + warnDays * 0.5;
+  let oClass, oIcon, oStatus, oSub;
+
+  if (riskScore <= totalDays * 0.3) {
+    oClass  = "good"; oIcon = "✅";
+    oStatus = isHindi ? "स्थिति अच्छी है" : "GOOD Conditions";
+    oSub    = isHindi
+      ? `${totalDays} दिनों में से ${badDays} दिन प्रतिकूल — इस फसल के लिए उचित समय।`
+      : `Only ${badDays} of ${totalDays} days unfavorable. Good time to grow!`;
+  } else if (riskScore <= totalDays * 0.6) {
+    oClass  = "moderate"; oIcon = "⚠️";
+    oStatus = isHindi ? "मध्यम स्थिति" : "MODERATE Conditions";
+    oSub    = isHindi
+      ? `${badDays} दिन प्रतिकूल, ${warnDays} दिन सीमांत — सावधानी से खेती करें।`
+      : `${badDays} unfavorable, ${warnDays} marginal days. Monitor your crop carefully.`;
+  } else {
+    oClass  = "danger"; oIcon = "🚨";
+    oStatus = isHindi ? "खतरनाक स्थिति" : "DANGER — High Risk";
+    oSub    = isHindi
+      ? `${badDays} दिन खराब मौसम — इस फसल के लिए जोखिम बहुत अधिक है।`
+      : `${badDays} of ${totalDays} days outside safe range. High risk for this crop.`;
+  }
+
+  // ── Populate summary banner ─────────────────────────────────────────────────
+  const sb = document.getElementById("summaryBanner");
+  sb.className = `summary-banner ${oClass}`;
+  document.getElementById("bannerIcon").textContent   = oIcon;
+  document.getElementById("bannerLabel").textContent  = isHindi ? "फसल स्थिति" : "Crop Status";
+  document.getElementById("bannerLabel").className    = `banner-label ${oClass}`;
+  document.getElementById("bannerStatus").textContent = oStatus;
+  document.getElementById("bannerStatus").className   = `banner-status ${oClass}`;
+  document.getElementById("bannerSub").textContent    = oSub;
+
+  // ── Crop info + description ─────────────────────────────────────────────────
+  const cropMeta = CROPS[crop];
+  document.getElementById("cropBigEmoji").textContent = cropMeta ? cropMeta.emoji : "🌾";
+  document.getElementById("cropNameEn").textContent   = cropMeta ? cropMeta.en    : crop;
+  document.getElementById("cropNameHi").textContent   = cropMeta ? cropMeta.hi    : "";
+  const descMap = isHindi ? CROP_DESC_HI : CROP_DESC_EN;
+  document.getElementById("cropDescText").textContent = descMap[crop] || "";
+
+  // ── Days grid ───────────────────────────────────────────────────────────────
+  const dg = document.getElementById("daysGrid");
+  dg.innerHTML = "";
+  for (const dr of dayResults) {
+    const statusHi = dr.status === "ok" ? "उचित" : dr.status === "warn" ? "सीमांत" : "प्रतिकूल";
+    const statusEn = dr.status === "ok" ? "Suitable" : dr.status === "warn" ? "Marginal" : "Unsuitable";
+    dg.innerHTML += `
+      <div class="day-card ${dr.status}">
+        <div class="day-label">${dr.dayLabel}</div>
+        <div class="day-label">${dr.dateLabel}</div>
+        <span class="day-icon">${dr.wIcon}</span>
+        <div class="day-temp">${Math.round(dr.temp)}°C</div>
+        <div class="day-temp" style="font-size:0.72rem;color:#888">${Math.round(dr.humidity)}%</div>
+        <div class="day-status ${dr.status}">${isHindi ? statusHi : statusEn}</div>
+      </div>`;
+  }
+
+  // ── Stats row ───────────────────────────────────────────────────────────────
+  const sr = document.getElementById("statsRow");
+  sr.innerHTML = `
+    <div class="stat-card">
+      <span class="stat-icon">🌡️</span>
+      <span class="stat-label">${isHindi ? "औसत तापमान" : "Avg Temp"}</span>
+      <div class="stat-val">${avgTemp.toFixed(1)}°C</div>
+    </div>
+    <div class="stat-card">
+      <span class="stat-icon">💧</span>
+      <span class="stat-label">${isHindi ? "औसत आर्द्रता" : "Avg Humidity"}</span>
+      <div class="stat-val">${avgHumid.toFixed(0)}%</div>
+    </div>
+    <div class="stat-card">
+      <span class="stat-icon">✅</span>
+      <span class="stat-label">${isHindi ? "उचित दिन" : "Suitable Days"}</span>
+      <div class="stat-val">${totalDays - badDays - warnDays}/${totalDays}</div>
+    </div>`;
+
+  // ── Irrigation result (respects user toggle) ────────────────────────────────
+  const cropRain   = (rules.rainfall[0] + rules.rainfall[1]) / 2;  // monthly ideal
+  const rain15d    = parseFloat((monthlyRain * 0.5).toFixed(1));
+  const effRain    = parseFloat((rain15d * 0.8).toFixed(1));
+  const deficit    = Math.max(0, cropRain - effRain);
+  const irrNeeded  = parseFloat(deficit.toFixed(1));
+
+  const irrCard    = document.getElementById("irrResultCard");
+  const irrIcon    = document.getElementById("irrResultIcon");
+  const irrTitle   = document.getElementById("irrResultTitle");
+  const irrStats   = document.getElementById("irrStatsRow");
+  const irrFreq    = document.getElementById("irrFreqBadge");
+
+  if (!irrigationOn) {
+    // User said irrigation NOT available
+    irrCard.className = "irr-result-card inactive";
+    irrIcon.textContent  = "🚫";
+    irrTitle.textContent = isHindi
+      ? "सिंचाई उपलब्ध नहीं — केवल वर्षा पर निर्भर"
+      : "No Irrigation — Depending on Natural Rainfall Only";
+    irrStats.innerHTML = `
+      <div class="irr-stat">
+        <div class="irr-stat-label">${isHindi ? "प्राकृतिक वर्षा (15 दिन)" : "Natural Rainfall (15d)"}</div>
+        <div class="irr-stat-val">${rain15d} mm</div>
+      </div>
+      <div class="irr-stat">
+        <div class="irr-stat-label">${isHindi ? "फसल की जरूरत (माह)" : "Crop Need (monthly)"}</div>
+        <div class="irr-stat-val">${cropRain.toFixed(0)} mm</div>
+      </div>`;
+    const warning = irrNeeded > 0
+      ? (isHindi ? `⚠️ ${irrNeeded} मिमी अतिरिक्त पानी की कमी — फसल पर असर पड़ सकता है।`
+                 : `⚠️ ${irrNeeded} mm water deficit — may stress the crop without irrigation.`)
+      : (isHindi ? "✅ वर्षा पर्याप्त है।" : "✅ Rainfall is sufficient for this crop.");
+    irrFreq.textContent = warning;
+
+  } else if (irrNeeded === 0) {
+    // Irrigation available and NOT needed
+    irrCard.className = "irr-result-card none";
+    irrIcon.textContent  = "✅";
+    irrTitle.textContent = isHindi
+      ? "सिंचाई की आवश्यकता नहीं — वर्षा पर्याप्त है"
+      : "No Irrigation Needed — Rainfall Sufficient";
+    irrStats.innerHTML = `
+      <div class="irr-stat">
+        <div class="irr-stat-label">${isHindi ? "वर्षा (15 दिन)" : "Rainfall (15d)"}</div>
+        <div class="irr-stat-val">${rain15d} mm</div>
+      </div>
+      <div class="irr-stat">
+        <div class="irr-stat-label">${isHindi ? "प्रभावी वर्षा" : "Effective Rainfall"}</div>
+        <div class="irr-stat-val">${effRain} mm</div>
+      </div>`;
+    irrFreq.textContent = isHindi
+      ? "💧 सिंचाई की आवश्यकता नहीं — प्राकृतिक वर्षा पर्याप्त है।"
+      : "💧 Rainfall sufficient — no irrigation needed.";
+
+  } else {
+    // Irrigation available and needed
+    let freq, freqLabel;
+    if (irrNeeded < 20)      { freq = 1; freqLabel = isHindi ? "हल्की पूरक सिंचाई" : "Light Supplemental"; }
+    else if (irrNeeded < 50) { freq = 2; freqLabel = isHindi ? "मध्यम सिंचाई"       : "Moderate Irrigation"; }
+    else if (irrNeeded < 90) { freq = 3; freqLabel = isHindi ? "नियमित सिंचाई"      : "Regular Irrigation";  }
+    else                     { freq = 4; freqLabel = isHindi ? "भारी सिंचाई"        : "Heavy Irrigation";    }
+
+    irrCard.className = "irr-result-card active";
+    irrIcon.textContent  = "💧";
+    irrTitle.textContent = isHindi ? "सिंचाई आवश्यक है" : "Irrigation Required";
+    irrStats.innerHTML = `
+      <div class="irr-stat">
+        <div class="irr-stat-label">${isHindi ? "प्राकृतिक वर्षा" : "Natural Rainfall"}</div>
+        <div class="irr-stat-val">${rain15d} mm</div>
+      </div>
+      <div class="irr-stat">
+        <div class="irr-stat-label">${isHindi ? "सिंचाई जोड़ें" : "Irrigation Add"}</div>
+        <div class="irr-stat-val">+${irrNeeded} mm</div>
+      </div>`;
+    irrFreq.innerHTML = `🌿 <strong>${isHindi ? "सुझाव:" : "Recommendation:"}</strong> ${freqLabel} — ${freq} ${isHindi ? "दिन/सप्ताह" : "days/week"}`;
+  }
+
+  // ── Ideal conditions ────────────────────────────────────────────────────────
+  const ir = document.getElementById("idealRow");
+  ir.innerHTML = `
+    <div class="ideal-item">
+      <span class="ideal-item-icon">🌡️</span>
+      <span class="ideal-item-label">${isHindi ? "तापमान" : "Temperature"}</span>
+      <div class="ideal-item-val">${rules.temp[0]}–${rules.temp[1]}°C</div>
+    </div>
+    <div class="ideal-item">
+      <span class="ideal-item-icon">💧</span>
+      <span class="ideal-item-label">${isHindi ? "आर्द्रता" : "Humidity"}</span>
+      <div class="ideal-item-val">${rules.humidity[0]}–${rules.humidity[1]}%</div>
+    </div>
+    <div class="ideal-item">
+      <span class="ideal-item-icon">🌧️</span>
+      <span class="ideal-item-label">${isHindi ? "वर्षा (माह)" : "Rainfall (mo)"}</span>
+      <div class="ideal-item-val">${rules.rainfall[0]}–${rules.rainfall[1]} mm</div>
+    </div>`;
+
+  // ── Show result area ────────────────────────────────────────────────────────
+  document.getElementById("resultArea").classList.add("show");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function resetForm() {
+  document.getElementById("resultArea").classList.remove("show");
+  document.getElementById("formCard").style.display = "block";
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+</script>
+
+{% if session_name %}
+<div class="profile-wrap" id="profileWrap">
+  <div class="profile-btn" onclick="toggleProfile(event)">
+    <div class="profile-avatar">{{ session_name[0]|upper }}</div>
+    <span>Hi, {{ session_name.split()[0] }}</span>
+    <span class="profile-chevron">▼</span>
+  </div>
+  <div class="profile-dropdown">
+    <div class="profile-dropdown-header">
+      <div class="profile-dropdown-name">{{ session_name }}</div>
+      <div class="profile-dropdown-sub">📱 {{ session_mobile }}</div>
+    </div>
+    <a href="/history?lang={{ lang }}">
+      <span class="profile-dropdown-icon">📋</span>
+      {% if lang == 'hi' %}मेरी हिस्ट्री{% else %}My History{% endif %}
+    </a>
+    <a href="/logout" class="logout-link">
+      <span class="profile-dropdown-icon">🚪</span>
+      {% if lang == 'hi' %}लॉग आउट{% else %}Logout{% endif %}
+    </a>
+  </div>
+</div>
+<script>
+function toggleProfile(e){e.stopPropagation();document.getElementById("profileWrap").classList.toggle("open");}
+document.addEventListener("click",function(){var w=document.getElementById("profileWrap");if(w)w.classList.remove("open");});
+</script>
+{% endif %}
+
+</body>
+</html>

@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="{{ 'hi' if lang == 'hi' else 'en' }}">
+<head>
+<title>{% if lang == 'hi' %}मेरी हिस्ट्री{% else %}My History{% endif %} — Kisan Suvidha</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Yatra+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green-deep: #1a4d2e;
+    --green-mid:  #2e7d4f;
+    --green-bright: #4caf73;
+    --gold:  #f5c842;
+    --text-dark: #1a2e1a;
+    --border: #c8e6c9;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    min-height: 100vh;
+    background: #f1f8f1;
+    font-family: 'Nunito', sans-serif;
+    padding-bottom: 80px;
+  }
+
+  /* ── Top rainbow stripe ── */
+  .nature-header {
+    height: 6px;
+    background: linear-gradient(90deg, var(--green-mid), var(--green-bright), var(--gold), var(--green-bright), var(--green-mid));
+  }
+
+  /* ── Page header banner ── */
+  .page-header {
+    background: linear-gradient(135deg, var(--green-mid) 0%, var(--green-deep) 100%);
+    padding: 36px 28px 56px;
+    color: white; position: relative; overflow: hidden;
+  }
+  .page-header::after {
+    content: '';
+    position: absolute; bottom: -28px; left: 0; right: 0; height: 56px;
+    background: #f1f8f1;
+    border-radius: 50% 50% 0 0 / 60% 60% 0 0;
+  }
+  .page-header-inner {
+    max-width: 860px; margin: 0 auto;
+    display: flex; align-items: center; gap: 18px;
+    position: relative; z-index: 2;
+  }
+  .header-avatar {
+    width: 56px; height: 56px;
+    background: rgba(255,255,255,0.2);
+    border: 2px solid rgba(255,255,255,0.35);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem; font-weight: 900; color: white; flex-shrink: 0;
+  }
+  .header-text h1 {
+    font-size: 1.55rem; font-weight: 900; margin-bottom: 3px;
+  }
+  .header-text p { font-size: 0.88rem; opacity: 0.75; font-weight: 600; }
+
+  /* ── Nav bar ── */
+  .nav-bar {
+    max-width: 860px; margin: 30px auto 0;
+    padding: 0 20px;
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  }
+  .nav-back {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 18px; background: white;
+    border: 1.5px solid var(--border); border-radius: 30px;
+    color: var(--green-mid); text-decoration: none;
+    font-size: 0.88rem; font-weight: 800; transition: 0.2s;
+  }
+  .nav-back:hover { background: #edfbf1; border-color: var(--green-bright); }
+
+  .filter-tabs {
+    display: flex; gap: 8px; margin-left: auto;
+  }
+  .filter-tab {
+    padding: 8px 16px; border-radius: 30px;
+    font-size: 0.82rem; font-weight: 900;
+    cursor: pointer; border: 1.5px solid var(--border);
+    background: white; color: #888; transition: 0.2s;
+  }
+  .filter-tab.active,
+  .filter-tab:hover { background: var(--green-mid); color: white; border-color: var(--green-mid); }
+
+  /* ── Lang toggle ── */
+  .lang-toggle {
+    display: flex; align-items: center;
+    background: white; border: 1.5px solid var(--border);
+    border-radius: 30px; overflow: hidden;
+  }
+  .lang-toggle a {
+    padding: 7px 14px; text-decoration: none;
+    font-size: 0.82rem; font-weight: 900; color: #aaa; transition: 0.2s;
+  }
+  .lang-toggle a.active {
+    background: linear-gradient(135deg, var(--green-bright), var(--green-mid));
+    color: white; border-radius: 28px; margin: 2px;
+  }
+
+  /* ── Stats strip ── */
+  .stats-strip {
+    max-width: 860px; margin: 18px auto 0;
+    padding: 0 20px;
+    display: grid; grid-template-columns: repeat(3,1fr); gap: 14px;
+  }
+  .stat-card {
+    background: white; border-radius: 16px; padding: 18px 20px;
+    border: 1.5px solid var(--border);
+    box-shadow: 0 3px 14px rgba(46,125,79,0.07);
+    text-align: center;
+  }
+  .stat-num { font-size: 2rem; font-weight: 900; color: var(--green-mid); line-height: 1; }
+  .stat-label { font-size: 0.78rem; color: #888; font-weight: 700; margin-top: 4px; }
+
+  /* ── History list ── */
+  .history-list {
+    max-width: 860px; margin: 22px auto 0;
+    padding: 0 20px;
+    display: flex; flex-direction: column; gap: 16px;
+  }
+
+  .history-card {
+    background: white; border-radius: 20px;
+    border: 1.5px solid var(--border);
+    box-shadow: 0 4px 18px rgba(46,125,79,0.08);
+    overflow: hidden;
+    animation: fadeUp 0.4s ease both;
+  }
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(16px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+
+  .card-accent-rec  { height: 4px; background: linear-gradient(90deg, var(--green-bright), var(--gold)); }
+  .card-accent-ana  { height: 4px; background: linear-gradient(90deg, #f5c842, #e8a000); }
+
+  .card-body { padding: 20px 22px; }
+
+  .card-top {
+    display: flex; align-items: flex-start;
+    justify-content: space-between; gap: 12px;
+    margin-bottom: 14px;
+  }
+  .card-title-wrap { display: flex; align-items: center; gap: 11px; }
+  .card-emoji { font-size: 2rem; line-height: 1; }
+  .card-title { font-size: 1.08rem; font-weight: 900; color: var(--text-dark); line-height: 1.3; }
+  .card-subtitle { font-size: 0.8rem; color: #888; font-weight: 700; margin-top: 2px; }
+
+  .card-meta {
+    display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0;
+  }
+  .badge {
+    display: inline-block; padding: 4px 12px; border-radius: 20px;
+    font-size: 0.75rem; font-weight: 900;
+  }
+  .badge-rec  { background: #edfbf1; color: var(--green-mid); }
+  .badge-ana  { background: #fffbea; color: #a07000; }
+  .badge-high { background: #edfbf1; color: #1b5e20; }
+  .badge-med  { background: #fff8e1; color: #f57c00; }
+  .badge-low  { background: #fce4ec; color: #c62828; }
+  .badge-exc  { background: #e8f5e9; color: #2e7d32; }
+  .badge-good { background: #e3f2fd; color: #1565c0; }
+  .badge-warn { background: #fff3e0; color: #e65100; }
+  .badge-dang { background: #fce4ec; color: #b71c1c; }
+  .card-datetime { font-size: 0.76rem; color: #bbb; font-weight: 700; }
+
+  /* detail grid */
+  .detail-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(150px,1fr));
+    gap: 10px; margin-bottom: 12px;
+  }
+  .detail-item {
+    background: #f8fdf9; border-radius: 12px;
+    padding: 10px 12px; border: 1px solid #e8f5e9;
+  }
+  .detail-label { font-size: 0.72rem; color: #aaa; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; }
+  .detail-value { font-size: 0.9rem; font-weight: 900; color: var(--text-dark); }
+
+  /* day pills for analysis */
+  .day-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .day-pill {
+    padding: 4px 10px; border-radius: 20px;
+    font-size: 0.74rem; font-weight: 900;
+  }
+  .day-pill.good { background: #e8f5e9; color: #2e7d32; }
+  .day-pill.bad  { background: #fce4ec; color: #c62828; }
+
+  /* reason box */
+  .reason-box {
+    background: #f4fdf6; border-radius: 12px;
+    padding: 10px 14px; border-left: 4px solid var(--green-bright);
+    font-size: 0.84rem; color: #555; font-weight: 600; line-height: 1.6;
+    margin-top: 10px;
+  }
+
+  /* empty state */
+  .empty-state {
+    text-align: center; padding: 70px 30px;
+    max-width: 400px; margin: 0 auto;
+  }
+  .empty-state .icon { font-size: 4rem; margin-bottom: 16px; }
+  .empty-state h2 { font-size: 1.3rem; font-weight: 900; color: var(--green-deep); margin-bottom: 8px; }
+  .empty-state p { font-size: 0.9rem; color: #888; font-weight: 600; line-height: 1.6; margin-bottom: 22px; }
+  .empty-state a {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 13px 24px;
+    background: linear-gradient(135deg, var(--green-bright), var(--green-mid));
+    color: white; text-decoration: none; border-radius: 30px;
+    font-size: 0.95rem; font-weight: 900;
+    box-shadow: 0 6px 20px rgba(46,125,79,0.3);
+  }
+
+  /* profile widget */
+  .profile-wrap {
+    position: fixed; bottom: 82px; right: 24px; z-index: 102;
+  }
+  .profile-btn {
+    display: flex; align-items: center; gap: 9px;
+    background: white; border: 2px solid var(--border); border-radius: 50px;
+    padding: 11px 18px 11px 14px; font-size: 0.88rem; font-weight: 900;
+    color: var(--green-deep); cursor: pointer;
+    box-shadow: 0 6px 22px rgba(46,125,79,0.16); transition: 0.22s;
+    white-space: nowrap; font-family: 'Nunito', sans-serif;
+  }
+  .profile-btn:hover { background:#edfbf1; border-color:var(--green-bright); transform:translateY(-2px); }
+  .profile-avatar {
+    width:30px;height:30px;
+    background:linear-gradient(135deg,var(--green-bright),var(--green-mid));
+    border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-size:0.9rem;color:white;font-weight:900;flex-shrink:0;
+  }
+  .profile-chevron{font-size:0.65rem;color:#aaa;transition:transform 0.2s;margin-left:2px;}
+  .profile-wrap.open .profile-chevron{transform:rotate(180deg);}
+  .profile-dropdown{
+    position:absolute;bottom:calc(100% + 10px);right:0;background:white;
+    border:1.5px solid var(--border);border-radius:18px;
+    box-shadow:0 16px 48px rgba(46,125,79,0.18);overflow:hidden;min-width:190px;
+    opacity:0;transform:translateY(8px) scale(0.97);pointer-events:none;
+    transition:opacity 0.2s,transform 0.2s;transform-origin:bottom right;
+  }
+  .profile-wrap.open .profile-dropdown{opacity:1;transform:translateY(0) scale(1);pointer-events:all;}
+  .profile-dropdown-header{padding:14px 16px 10px;border-bottom:1px solid var(--border);}
+  .profile-dropdown-name{font-weight:900;font-size:0.95rem;color:var(--green-deep);}
+  .profile-dropdown-sub{font-size:0.76rem;color:#aaa;font-weight:600;margin-top:2px;}
+  .profile-dropdown a{
+    display:flex;align-items:center;gap:11px;padding:13px 16px;
+    text-decoration:none;font-size:0.9rem;font-weight:800;
+    color:var(--text-dark);transition:background 0.15s;border-bottom:1px solid #f0f0f0;
+  }
+  .profile-dropdown a:last-child{border-bottom:none;}
+  .profile-dropdown a:hover{background:#f4fdf6;color:var(--green-mid);}
+  .profile-dropdown a.logout-link:hover{background:#fff5f5;color:#c62828;}
+  .profile-dropdown-icon{font-size:1rem;}
+
+  /* support btn */
+  .support-btn {
+    position: fixed; bottom: 24px; right: 24px;
+    background: linear-gradient(135deg, var(--green-mid), var(--green-deep));
+    color: white; padding: 13px 22px; border-radius: 50px;
+    text-decoration: none; font-size: 15px; font-weight: 800;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.22); z-index: 100; transition: 0.2s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .support-btn:hover { transform: translateY(-2px); }
+
+  @media (max-width: 520px) {
+    .stats-strip { grid-template-columns: 1fr 1fr; }
+    .card-top { flex-direction: column; }
+    .card-meta { align-items: flex-start; }
+    .filter-tabs { margin-left: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="nature-header"></div>
+
+<!-- Page header banner -->
+<div class="page-header">
+  <div class="page-header-inner">
+    <div class="header-avatar">{{ name[0]|upper if name else '?' }}</div>
+    <div class="header-text">
+      <h1>{% if lang == 'hi' %}नमस्ते, {{ name.split()[0] }}!{% else %}Hello, {{ name.split()[0] }}!{% endif %}</h1>
+      <p>{% if lang == 'hi' %}आपकी फसल गतिविधि का इतिहास{% else %}Your complete crop activity history{% endif %}</p>
+    </div>
+  </div>
+</div>
+
+<!-- Nav bar -->
+<div class="nav-bar">
+  <a href="/choose?lang={{ lang }}" class="nav-back">← {% if lang == 'hi' %}डैशबोर्ड{% else %}Dashboard{% endif %}</a>
+
+  <div class="filter-tabs">
+    <button class="filter-tab active" onclick="filterCards('all', this)">
+      {% if lang == 'hi' %}सभी{% else %}All{% endif %}
+    </button>
+    <button class="filter-tab" onclick="filterCards('rec', this)">
+      🌱 {% if lang == 'hi' %}सिफारिश{% else %}Recommendations{% endif %}
+    </button>
+    <button class="filter-tab" onclick="filterCards('ana', this)">
+      📊 {% if lang == 'hi' %}विश्लेषण{% else %}Analysis{% endif %}
+    </button>
+  </div>
+
+  <div class="lang-toggle">
+    <a href="/history?lang=en" class="{% if lang != 'hi' %}active{% endif %}">EN</a>
+    <a href="/history?lang=hi" class="{% if lang == 'hi' %}active{% endif %}">हि</a>
+  </div>
+</div>
+
+<!-- Stats strip -->
+{% set rec_count = records | selectattr('activity_type','equalto','Crop Recommendation') | list | length %}
+{% set ana_count = records | selectattr('activity_type','equalto','Crop Analysis') | list | length %}
+<div class="stats-strip">
+  <div class="stat-card">
+    <div class="stat-num">{{ records|length }}</div>
+    <div class="stat-label">{% if lang == 'hi' %}कुल गतिविधियाँ{% else %}Total Activities{% endif %}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-num">{{ rec_count }}</div>
+    <div class="stat-label">{% if lang == 'hi' %}सिफारिशें{% else %}Recommendations{% endif %}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-num">{{ ana_count }}</div>
+    <div class="stat-label">{% if lang == 'hi' %}विश्लेषण{% else %}Analyses{% endif %}</div>
+  </div>
+</div>
+
+<!-- History list -->
+<div class="history-list" id="historyList">
+
+{% if records %}
+  {% for rec in records %}
+  {% set is_rec = rec.activity_type == 'Crop Recommendation' %}
+
+  <div class="history-card {% if is_rec %}type-rec{% else %}type-ana{% endif %}"
+       style="animation-delay: {{ loop.index0 * 0.05 }}s">
+
+    <div class="{% if is_rec %}card-accent-rec{% else %}card-accent-ana{% endif %}"></div>
+    <div class="card-body">
+
+      <!-- Card top row -->
+      <div class="card-top">
+        <div class="card-title-wrap">
+          <span class="card-emoji">{% if is_rec %}🌱{% else %}📊{% endif %}</span>
+          <div>
+            <div class="card-title">
+              {% if is_rec %}
+                {{ rec.crop|capitalize }}{% if rec.crop_hindi %} · {{ rec.crop_hindi }}{% endif %}
+              {% else %}
+                {{ rec.crop|capitalize }} —
+                {% if lang == 'hi' %}
+                  {% if rec.overall_status == 'Excellent Conditions' %}उत्कृष्ट स्थिति
+                  {% elif rec.overall_status == 'Good Conditions' %}अच्छी स्थिति
+                  {% elif rec.overall_status == 'Moderate Risk' %}मध्यम जोखिम
+                  {% else %}खतरनाक स्थिति{% endif %}
+                {% else %}{{ rec.overall_status }}{% endif %}
+              {% endif %}
+            </div>
+            <div class="card-subtitle">
+              {{ rec.district }}{% if is_rec %} · {{ rec.state }} · {{ rec.season }}{% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div class="card-meta">
+          <!-- Activity type badge -->
+          <span class="badge {% if is_rec %}badge-rec{% else %}badge-ana{% endif %}">
+            {% if is_rec %}
+              {% if lang == 'hi' %}सिफारिश{% else %}Recommendation{% endif %}
+            {% else %}
+              {% if lang == 'hi' %}विश्लेषण{% else %}Analysis{% endif %}
+            {% endif %}
+          </span>
+          <!-- Confidence / Status badge -->
+          {% if is_rec %}
+            {% if rec.confidence == 'HIGH' %}
+              <span class="badge badge-high">{% if lang=='hi'%}उच्च{% else %}HIGH{% endif %}</span>
+            {% elif rec.confidence == 'MEDIUM' %}
+              <span class="badge badge-med">{% if lang=='hi'%}मध्यम{% else %}MEDIUM{% endif %}</span>
+            {% else %}
+              <span class="badge badge-low">{% if lang=='hi'%}कम{% else %}LOW{% endif %}</span>
+            {% endif %}
+          {% else %}
+            {% if rec.overall_status == 'Excellent Conditions' %}
+              <span class="badge badge-exc">{% if lang=='hi'%}उत्कृष्ट{% else %}Excellent{% endif %}</span>
+            {% elif rec.overall_status == 'Good Conditions' %}
+              <span class="badge badge-good">{% if lang=='hi'%}अच्छा{% else %}Good{% endif %}</span>
+            {% elif rec.overall_status == 'Moderate Risk' %}
+              <span class="badge badge-warn">{% if lang=='hi'%}सतर्क{% else %}Moderate{% endif %}</span>
+            {% else %}
+              <span class="badge badge-dang">{% if lang=='hi'%}जोखिम{% else %}High Risk{% endif %}</span>
+            {% endif %}
+          {% endif %}
+          <span class="card-datetime">{{ rec.datetime }}</span>
+        </div>
+      </div>
+
+      <!-- Detail grid -->
+      {% if is_rec %}
+      <div class="detail-grid">
+        <div class="detail-item">
+          <div class="detail-label">{% if lang=='hi'%}मिट्टी{% else %}Soil{% endif %}</div>
+          <div class="detail-value">{{ rec.soil }}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">{% if lang=='hi'%}तापमान{% else %}Temp{% endif %}</div>
+          <div class="detail-value">{{ rec.temperature_c }}°C</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">{% if lang=='hi'%}नमी{% else %}Humidity{% endif %}</div>
+          <div class="detail-value">{{ rec.humidity_pct }}%</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">{% if lang=='hi'%}वर्षा{% else %}Rainfall{% endif %}</div>
+          <div class="detail-value">{{ rec.rainfall_mm }} mm</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">{% if lang=='hi'%}सिंचाई{% else %}Irrigation{% endif %}</div>
+          <div class="detail-value">{{ rec.irrigation_needed_mm }} mm</div>
+        </div>
+        {% if rec.alternatives %}
+        <div class="detail-item" style="grid-column: span 2;">
+          <div class="detail-label">{% if lang=='hi'%}विकल्प{% else %}Alternatives{% endif %}</div>
+          <div class="detail-value" style="font-size:0.82rem;">{{ rec.alternatives }}</div>
+        </div>
+        {% endif %}
+      </div>
+      {% if rec.irrigation_label %}
+      <div class="reason-box">{{ rec.irrigation_label }}</div>
+      {% endif %}
+
+
+      {% else %}
+      <!-- Analysis record -->
+      <div class="detail-grid">
+        <div class="detail-item">
+          <div class="detail-label">{% if lang=='hi'%}कुल दिन{% else %}Total Days{% endif %}</div>
+          <div class="detail-value">{{ rec.total_days }}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">{% if lang=='hi'%}अनुकूल दिन{% else %}Good Days{% endif %}</div>
+          <div class="detail-value" style="color:#2e7d4f;">{{ rec.good_days }}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">{% if lang=='hi'%}प्रतिकूल दिन{% else %}Bad Days{% endif %}</div>
+          <div class="detail-value" style="color:#c62828;">{{ rec.bad_days }}</div>
+        </div>
+      </div>
+      {% if rec.day_results %}
+      <div class="day-pills">
+        {% for day_r in rec.day_results.split(' | ') %}
+          <span class="day-pill {{ day_r.strip() }}">
+            {{ loop.index }}
+            {% if day_r.strip() == 'good' %}✓{% else %}✗{% endif %}
+          </span>
+        {% endfor %}
+      </div>
+      {% endif %}
+      {% endif %}
+
+    </div>
+  </div>
+  {% endfor %}
+
+{% else %}
+  <div class="empty-state">
+    <div class="icon">🌾</div>
+    <h2>{% if lang == 'hi' %}अभी कोई इतिहास नहीं{% else %}No History Yet{% endif %}</h2>
+    <p>{% if lang == 'hi' %}जब आप फसल सिफारिश या विश्लेषण करेंगे, तो यहाँ सब कुछ दिखेगा।
+    {% else %}Once you run a crop recommendation or analysis, everything will appear here.{% endif %}</p>
+    <a href="/choose?lang={{ lang }}">
+      {% if lang == 'hi' %}शुरू करें{% else %}Get Started{% endif %}
+    </a>
+  </div>
+{% endif %}
+
+</div><!-- /history-list -->
+
+<!-- Support button -->
+<a href="/support?lang={{ lang }}" class="support-btn">
+  {% if lang == 'hi' %}सहायता{% else %}Support{% endif %}
+</a>
+
+<!-- Profile button -->
+{% if session_name %}
+<div class="profile-wrap" id="profileWrap">
+  <div class="profile-btn" onclick="toggleProfile(event)">
+    <div class="profile-avatar">{{ session_name[0]|upper }}</div>
+    <span>Hi, {{ session_name.split()[0] }}</span>
+    <span class="profile-chevron">▼</span>
+  </div>
+  <div class="profile-dropdown">
+    <div class="profile-dropdown-header">
+      <div class="profile-dropdown-name">{{ session_name }}</div>
+      <div class="profile-dropdown-sub">{{ session_mobile }}</div>
+    </div>
+    <a href="/history?lang={{ lang }}">
+      <span class="profile-dropdown-icon">▤</span>
+      {% if lang == 'hi' %}मेरी हिस्ट्री{% else %}My History{% endif %}
+    </a>
+    <a href="/logout" class="logout-link">
+      <span class="profile-dropdown-icon">→</span>
+      {% if lang == 'hi' %}लॉग आउट{% else %}Logout{% endif %}
+    </a>
+  </div>
+</div>
+{% endif %}
+
+<script>
+// Filter cards
+function filterCards(type, btn) {
+  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.history-card').forEach(card => {
+    if (type === 'all') { card.style.display = ''; return; }
+    const isRec = card.classList.contains('type-rec');
+    card.style.display = ((type === 'rec' && isRec) || (type === 'ana' && !isRec)) ? '' : 'none';
+  });
+}
+
+// Profile dropdown
+function toggleProfile(e) {
+  e.stopPropagation();
+  document.getElementById('profileWrap').classList.toggle('open');
+}
+document.addEventListener('click', function() {
+  var w = document.getElementById('profileWrap');
+  if (w) w.classList.remove('open');
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Kisan Support</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Yatra+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green-deep: #1a4d2e;
+    --green-mid: #2e7d4f;
+    --green-bright: #4caf73;
+    --gold: #f5c842;
+    --cream: #fdf8f0;
+    --text-dark: #1a2e1a;
+    --border: #c8e6c9;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    min-height: 100vh;
+    background: #e8f5e9;
+    font-family: 'Nunito', sans-serif;
+    display: flex; align-items: center; justify-content: center;
+    padding: 28px; position: relative; overflow-x: hidden;
+  }
+  .bg-pattern {
+    position: fixed; inset: 0; z-index: 0;
+    background:
+      radial-gradient(ellipse at 80% 10%, rgba(76,175,115,0.22) 0%, transparent 55%),
+      radial-gradient(ellipse at 10% 90%, rgba(245,200,66,0.10) 0%, transparent 55%),
+      linear-gradient(160deg, #c8e6c9 0%, #e8f5e9 50%, #f1f8e9 100%);
+  }
+  .nature-header {
+    position: fixed; top: 0; left: 0; right: 0; height: 6px;
+    background: linear-gradient(90deg, var(--green-mid), var(--green-bright), var(--gold), var(--green-bright), var(--green-mid));
+    z-index: 20;
+  }
+
+  .page-layout {
+    position: relative; z-index: 10;
+    display: grid; grid-template-columns: 1fr 1.4fr;
+    background: white; border-radius: 28px; overflow: hidden;
+    box-shadow: 0 32px 80px rgba(46,125,79,0.16), 0 0 0 1.5px rgba(76,175,115,0.2);
+    width: 820px; max-width: 98vw;
+    animation: riseIn 0.7s cubic-bezier(.16,1,.3,1) both;
+  }
+  @keyframes riseIn {
+    from { opacity:0; transform:translateY(30px); }
+    to { opacity:1; transform:translateY(0); }
+  }
+
+  .left-panel {
+    background: linear-gradient(160deg, var(--green-mid) 0%, var(--green-deep) 100%);
+    padding: 44px 32px; color: white;
+    display: flex; flex-direction: column; gap: 26px;
+    position: relative; overflow: hidden;
+  }
+  .left-panel::after {
+    content: '';
+    position: absolute; bottom: -60px; right: -60px;
+    width: 220px; height: 220px;
+    background: rgba(255,255,255,0.05); border-radius: 50%;
+  }
+
+  .brand-pill {
+    display: inline-flex; align-items: center; gap: 9px;
+    background: rgba(255,255,255,0.14);
+    border: 1px solid rgba(255,255,255,0.22);
+    border-radius: 30px; padding: 8px 16px;
+    font-family: 'Yatra One', cursive; font-size: 1.0rem; width: fit-content;
+  }
+
+  /* SVG Kisan illustration */
+  .kisan-art {
+    text-align: center; position: relative; z-index: 1;
+  }
+
+  .support-hero { position: relative; z-index: 1; }
+  .support-emoji { font-size: 3.8rem; display: block; margin-bottom: 12px; }
+  .support-title { font-size: 1.45rem; font-weight: 900; line-height: 1.35; margin-bottom: 8px; }
+  .support-sub { font-size: 0.88rem; opacity: 0.74; line-height: 1.65; font-weight: 600; }
+
+  .tips-section { position: relative; z-index: 1; }
+  .tips-title {
+    font-size: 0.78rem; text-transform: uppercase; letter-spacing: 1.4px;
+    opacity: 0.65; margin-bottom: 12px;
+    display: flex; align-items: center; gap: 7px; font-weight: 800;
+  }
+  .tip-item {
+    display: flex; align-items: flex-start; gap: 11px;
+    padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,0.1);
+    font-size: 0.88rem; line-height: 1.5; opacity: 0.88; font-weight: 600;
+  }
+  .tip-item:last-child { border-bottom: none; }
+  .tip-emoji { font-size: 1rem; margin-top: 1px; flex-shrink: 0; }
+
+  .contact-chips { display: flex; flex-direction: column; gap: 10px; position: relative; z-index: 1; }
+  .contact-chip {
+    display: flex; align-items: center; gap: 12px;
+    background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 12px; padding: 12px 14px; font-size: 0.88rem;
+  }
+  .contact-chip-icon { font-size: 1.1rem; }
+  .contact-chip-text { opacity: 0.78; font-size: 0.8rem; font-weight: 600; }
+  .contact-chip-val { font-weight: 900; display: block; font-size: 0.92rem; }
+
+  /* Right form */
+  .right-panel { padding: 44px 40px; overflow-y: auto; max-height: 90vh; }
+
+  .form-title { font-size: 1.6rem; font-weight: 900; color: var(--green-deep); margin-bottom: 5px; }
+  .form-sub { font-size: 0.92rem; color: #888; margin-bottom: 26px; font-weight: 600; }
+
+  .field-group { margin-bottom: 18px; }
+  .field-label {
+    display: block; font-size: 0.88rem; font-weight: 900; color: #555;
+    text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 8px;
+  }
+  .field-wrap { position: relative; }
+  .field-icon {
+    position: absolute; left: 14px; top: 50%;
+    transform: translateY(-50%); font-size: 16px; pointer-events: none;
+  }
+  .field-icon.top { top: 15px; transform: none; }
+
+  input, textarea {
+    width: 100%; padding: 13px 16px 13px 42px;
+    border: 2px solid var(--border); border-radius: 12px;
+    font-family: 'Nunito', sans-serif; font-size: 1rem;
+    color: var(--text-dark); background: #f9fdf9;
+    outline: none; transition: 0.2s; font-weight: 700;
+  }
+  textarea { height: 120px; resize: none; padding-top: 14px; vertical-align: top; }
+  input:focus, textarea:focus {
+    border-color: var(--green-bright);
+    box-shadow: 0 0 0 4px rgba(76,175,115,0.15);
+    background: white;
+  }
+
+  .submit-btn {
+    width: 100%; padding: 16px;
+    background: linear-gradient(135deg, var(--green-bright), var(--green-mid));
+    color: white; border: none; border-radius: 14px;
+    font-size: 1.1rem; font-weight: 900;
+    font-family: 'Nunito', sans-serif; cursor: pointer; transition: 0.22s;
+    box-shadow: 0 8px 24px rgba(46,125,79,0.35); margin-top: 10px;
+  }
+  .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(46,125,79,0.45); }
+
+  .back-link {
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+    margin-top: 16px; color: var(--green-mid);
+    font-size: 0.92rem; font-weight: 800;
+    text-decoration: none; opacity: 0.8; transition: 0.2s;
+  }
+  .back-link:hover { opacity: 1; }
+
+  @media (max-width: 620px) {
+    .left-panel { display: none; }
+    .page-layout { grid-template-columns: 1fr; }
+    .right-panel { padding: 32px 24px; max-height: none; }
+  }
+
+  /* ── Language Toggle ── */
+  .lang-toggle {
+    display: flex; align-items: center;
+    background: white; border: 1.5px solid var(--border);
+    border-radius: 30px; overflow: hidden;
+    box-shadow: 0 2px 8px rgba(46,125,79,0.10);
+    flex-shrink: 0;
+  }
+  .lang-toggle a {
+    padding: 7px 14px; text-decoration: none;
+    font-size: 0.82rem; font-weight: 900;
+    color: #aaa; transition: 0.2s;
+    white-space: nowrap;
+  }
+  .lang-toggle a.active {
+    background: linear-gradient(135deg, var(--green-bright), var(--green-mid));
+    color: white; border-radius: 28px;
+    margin: 2px;
+  }
+  .lang-toggle a:not(.active):hover { color: var(--green-mid); }
+
+
+  /* ── Profile Button ─────────────────────────────────────────────────────── */
+  .profile-wrap {
+    position: fixed; bottom: 82px; right: 24px;
+    z-index: 102;
+  }
+  .profile-btn {
+    display: flex; align-items: center; gap: 9px;
+    background: white;
+    border: 2px solid var(--border);
+    border-radius: 50px;
+    padding: 11px 18px 11px 14px;
+    font-size: 0.88rem; font-weight: 900;
+    color: var(--green-deep);
+    cursor: pointer;
+    box-shadow: 0 6px 22px rgba(46,125,79,0.16);
+    transition: 0.22s;
+    white-space: nowrap;
+    font-family: 'Nunito', sans-serif;
+  }
+  .profile-btn:hover {
+    background: #edfbf1; border-color: var(--green-bright);
+    box-shadow: 0 10px 30px rgba(46,125,79,0.24); transform: translateY(-2px);
+  }
+  .profile-avatar {
+    width: 30px; height: 30px;
+    background: linear-gradient(135deg, var(--green-bright), var(--green-mid));
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 0.9rem; color: white; font-weight: 900; flex-shrink: 0;
+  }
+  .profile-chevron { font-size: 0.65rem; color: #aaa; transition: transform 0.2s; margin-left: 2px; }
+  .profile-wrap.open .profile-chevron { transform: rotate(180deg); }
+  .profile-dropdown {
+    position: absolute; bottom: calc(100% + 10px); right: 0;
+    background: white; border: 1.5px solid var(--border); border-radius: 18px;
+    box-shadow: 0 16px 48px rgba(46,125,79,0.18); overflow: hidden; min-width: 190px;
+    opacity: 0; transform: translateY(8px) scale(0.97); pointer-events: none;
+    transition: opacity 0.2s, transform 0.2s; transform-origin: bottom right;
+  }
+  .profile-wrap.open .profile-dropdown { opacity: 1; transform: translateY(0) scale(1); pointer-events: all; }
+  .profile-dropdown-header { padding: 14px 16px 10px; border-bottom: 1px solid var(--border); }
+  .profile-dropdown-name { font-weight: 900; font-size: 0.95rem; color: var(--green-deep); }
+  .profile-dropdown-sub { font-size: 0.76rem; color: #aaa; font-weight: 600; margin-top: 2px; }
+  .profile-dropdown a {
+    display: flex; align-items: center; gap: 11px; padding: 13px 16px;
+    text-decoration: none; font-size: 0.9rem; font-weight: 800;
+    color: var(--text-dark); transition: background 0.15s; border-bottom: 1px solid #f0f0f0;
+  }
+  .profile-dropdown a:last-child { border-bottom: none; }
+  .profile-dropdown a:hover { background: #f4fdf6; color: var(--green-mid); }
+  .profile-dropdown a.logout-link:hover { background: #fff5f5; color: #c62828; }
+  .profile-dropdown-icon { font-size: 1rem; }
+</style>
+</head>
+<body>
+<div class="nature-header"></div>
+<div class="bg-pattern"></div>
+
+<div class="page-layout">
+
+  <div class="left-panel">
+    <div class="brand-pill">🌾 {% if lang == 'hi' %}किसान सुविधा{% else %}Kisan Suvidha{% endif %}</div>
+
+    <!-- SVG Kisan scene -->
+    <div class="kisan-art">
+      <svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:180px;">
+        <!-- Sky gradient -->
+        <rect width="200" height="150" rx="12" fill="rgba(255,255,255,0.06)"/>
+        <!-- Sun -->
+        <circle cx="160" cy="32" r="20" fill="rgba(245,200,66,0.35)"/>
+        <circle cx="160" cy="32" r="14" fill="rgba(245,200,66,0.55)"/>
+        <!-- Clouds -->
+        <ellipse cx="40" cy="28" rx="22" ry="10" fill="rgba(255,255,255,0.18)"/>
+        <ellipse cx="55" cy="24" rx="18" ry="9" fill="rgba(255,255,255,0.14)"/>
+        <!-- Ground -->
+        <rect x="0" y="112" width="200" height="38" rx="0" fill="rgba(76,175,115,0.25)"/>
+        <!-- Rolling hills -->
+        <ellipse cx="40" cy="120" rx="60" ry="22" fill="rgba(76,175,115,0.22)"/>
+        <ellipse cx="160" cy="125" rx="70" ry="20" fill="rgba(76,175,115,0.18)"/>
+        <!-- Wheat stalks -->
+        <g fill="none">
+          <line x1="18" y1="112" x2="18" y2="86" stroke="rgba(255,255,255,0.5)" stroke-width="2"/>
+          <ellipse cx="18" cy="82" rx="4" ry="10" fill="rgba(255,255,255,0.38)"/>
+          <line x1="36" y1="112" x2="36" y2="82" stroke="rgba(255,255,255,0.5)" stroke-width="2"/>
+          <ellipse cx="36" cy="78" rx="4" ry="10" fill="rgba(255,255,255,0.38)"/>
+          <line x1="155" y1="112" x2="155" y2="84" stroke="rgba(255,255,255,0.5)" stroke-width="2"/>
+          <ellipse cx="155" cy="80" rx="4" ry="10" fill="rgba(255,255,255,0.38)"/>
+          <line x1="175" y1="112" x2="175" y2="80" stroke="rgba(255,255,255,0.5)" stroke-width="2"/>
+          <ellipse cx="175" cy="76" rx="4" ry="10" fill="rgba(255,255,255,0.38)"/>
+        </g>
+        <!-- Farmer -->
+        <g fill="rgba(255,255,255,0.85)">
+          <ellipse cx="100" cy="55" rx="16" ry="5" fill="rgba(245,200,66,0.65)"/>
+          <rect x="88" y="44" width="24" height="14" rx="8" fill="rgba(245,200,66,0.65)"/>
+          <circle cx="100" cy="64" r="11" fill="rgba(255,220,180,0.9)"/>
+          <rect x="87" y="76" width="26" height="30" rx="8" fill="rgba(255,255,255,0.72)"/>
+          <rect x="72" y="80" width="17" height="8" rx="4" transform="rotate(12,80,84)" fill="rgba(255,255,255,0.6)"/>
+          <rect x="111" y="80" width="17" height="8" rx="4" transform="rotate(-12,120,84)" fill="rgba(255,255,255,0.6)"/>
+          <rect x="89" y="104" width="10" height="18" rx="4" fill="rgba(255,255,255,0.5)"/>
+          <rect x="101" y="104" width="10" height="18" rx="4" fill="rgba(255,255,255,0.5)"/>
+        </g>
+        <!-- Small tree -->
+        <line x1="130" y1="112" x2="130" y2="74" stroke="rgba(255,255,255,0.5)" stroke-width="3"/>
+        <ellipse cx="130" cy="66" rx="16" ry="20" fill="rgba(76,175,115,0.55)"/>
+        <ellipse cx="122" cy="74" rx="10" ry="14" fill="rgba(76,175,115,0.45)"/>
+        <ellipse cx="138" cy="72" rx="10" ry="14" fill="rgba(76,175,115,0.45)"/>
+      </svg>
+    </div>
+
+    <div class="support-hero">
+      <span class="support-emoji"></span>
+      <div class="support-title">{% if lang == 'hi' %}हम यहाँ आपकी मदद के लिए हैं{% else %}We're Here to Help{% endif %}</div>
+      <div class="support-sub">{% if lang == 'hi' %}किसी भी समस्या के लिए हमसे संपर्क करें। हम 24 घंटे उपलब्ध हैं।{% else %}Reach out for any farming issue. Our team responds within 24 hours.{% endif %}</div>
+    </div>
+
+    <div class="tips-section">
+      <div class="tips-title">💡 {% if lang == 'hi' %}स्वास्थ्य सुझाव{% else %}Wellness Tips{% endif %}</div>
+      <div class="tip-item"><span class="tip-emoji">😴</span>{% if lang == 'hi' %}बेहतर ध्यान के लिए रोज़ 7–8 घंटे सोएं।{% else %}Sleep 7–8 hours daily for better focus.{% endif %}</div>
+      <div class="tip-item"><span class="tip-emoji">🧘</span>{% if lang == 'hi' %}सुबह योगा या सैर से तनाव कम होता है।{% else %}Morning yoga or a short walk reduces stress.{% endif %}</div>
+      <div class="tip-item"><span class="tip-emoji">👨‍👩‍👧</span>{% if lang == 'hi' %}खेती की चिंताएं परिवार के साथ साझा करें।{% else %}Share farming worries with family members.{% endif %}</div>
+      <div class="tip-item"><span class="tip-emoji">📅</span>{% if lang == 'hi' %}अपने खेती के मौसम की पहले से योजना बनाएं।{% else %}Plan your farming season in advance.{% endif %}</div>
+    </div>
+
+    <div class="contact-chips">
+      <div class="contact-chip">
+        <span class="contact-chip-icon">📞</span>
+        <div>
+          <span class="contact-chip-text">{% if lang == 'hi' %}किसान कॉल सेंटर{% else %}Kisan Call Centre{% endif %}</span>
+          <span class="contact-chip-val">8989128312</span>
+        </div>
+      </div>
+      <div class="contact-chip">
+        <span class="contact-chip-icon">📧</span>
+        <div>
+          <span class="contact-chip-text">{% if lang == 'hi' %}ईमेल सहायता{% else %}Email Support{% endif %}</span>
+          <span class="contact-chip-val"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="1a6e7f696e346a636e7275743469776e6a2b282e5a7d777b737634797577">[email&#160;protected]</a></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="right-panel">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0;">
+  <div class="form-title">📬 {% if lang == 'hi' %}सहायता अनुरोध{% else %}Submit a Support Request{% endif %}</div>
+  <div class="lang-toggle">
+    <a href="{{ request.path }}?lang=en" class="{% if lang != 'hi' %}active{% endif %}">EN</a>
+    <a href="{{ request.path }}?lang=hi" class="{% if lang == 'hi' %}active{% endif %}">हि</a>
+  </div>
+</div>
+    <div class="form-sub">{% if lang == 'hi' %}हम जल्द ही आपसे संपर्क करेंगे{% else %}Describe your issue and we'll get back to you soon{% endif %}</div>
+
+    <form action="/submit_support" method="POST">
+
+      <div class="field-group">
+        <label class="field-label">👤 {% if lang == 'hi' %}आपका नाम{% else %}Your Name{% endif %}</label>
+        <div class="field-wrap">
+          <span class="field-icon">👤</span>
+          <input type="text" name="name" placeholder="{% if lang == 'hi' %}पूरा नाम{% else %}Full name{% endif %}" required>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">📧 {% if lang == 'hi' %}ईमेल{% else %}Email Address{% endif %}</label>
+        <div class="field-wrap">
+          <span class="field-icon">📧</span>
+          <input type="email" name="email" placeholder="you@example.com" required>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">✏️ {% if lang == 'hi' %}आपकी समस्या{% else %}Describe Your Issue{% endif %}</label>
+        <div class="field-wrap">
+          <span class="field-icon top">✏️</span>
+          <textarea name="message" placeholder="{% if lang == 'hi' %}अपनी समस्या विस्तार से लिखें...{% else %}Tell us what's going on with your crops or farm...{% endif %}" required></textarea>
+        </div>
+      </div>
+
+      <button type="submit" class="submit-btn">
+        {% if lang == 'hi' %}भेजें 📨{% else %}Send Message 📨{% endif %}
+      </button>
+
+    </form>
+
+    <a href="/choose" class="back-link">← {% if lang == 'hi' %}डैशबोर्ड पर वापस जाएं{% else %}Back to Dashboard{% endif %}</a>
+    <a href="/" class="
