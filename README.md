@@ -1,23 +1,23 @@
-# 🌾 KisaanSuvida — Smart Crop Recommendation System
+# KisaanSuvida — Smart Crop Recommendation System
 
 A comprehensive agricultural support web application that helps Indian farmers make informed crop decisions using a **Hybrid Prediction Engine** combining Machine Learning with regional heuristics.
 
 ---
 
-## ✨ Features
+##  Features
 
-- 🤖 **ML-Powered Crop Recommendation** — Trained Random Forest model on soil & weather parameters
-- 🌍 **Regional Heuristics** — Validates ML output against state, season, and soil-type rules
-- ☁️ **Live Weather Integration** — Fetches real-time data via OpenWeatherMap API
-- 📱 **OTP Authentication** — Twilio-based SMS OTP for secure user registration
-- 🌐 **Bilingual Support** — Full English & Hindi interface
-- 📊 **Crop Suitability Analysis** — Day-by-day feasibility analysis for a chosen crop
-- 📜 **User History** — Logs all past recommendations and analyses per user
-- 📩 **Support Portal** — Contact form with Gmail SMTP integration
+- **ML-Powered Crop Recommendation** — Trained Random Forest model on soil & weather parameters
+- **Regional Heuristics** — Validates ML output against state, season, and soil-type rules
+- **Live Weather Integration** — Fetches real-time data via OpenWeatherMap API
+- **OTP Authentication** — Twilio-based SMS OTP for secure user registration
+- **Bilingual Support** — Full English & Hindi interface
+- **Crop Suitability Analysis** — Day-by-day feasibility analysis for a chosen crop
+- **User History** — Logs all past recommendations and analyses per user
+- **Support Portal** — Contact form with Gmail SMTP integration
 
 ---
 
-## 🏗️ Architecture
+##  Architecture
 
 ```
 KisaanSuvida/
@@ -95,7 +95,7 @@ Visit `http://127.0.0.1:5000` in your browser.
 
 ---
 
-## 🔑 Environment Variables
+## Environment Variables
 
 | Variable | Description | Where to get it |
 |---|---|---|
@@ -109,7 +109,7 @@ Visit `http://127.0.0.1:5000` in your browser.
 
 ---
 
-## 🤖 Retraining the ML Model
+##  Retraining the ML Model
 
 If you want to retrain the model on the included dataset:
 
@@ -121,7 +121,7 @@ This reads `Crop_recommendation.csv`, trains a `RandomForestClassifier`, and sav
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 |---|---|
@@ -135,7 +135,7 @@ This reads `Crop_recommendation.csv`, trains a `RandomForestClassifier`, and sav
 
 ---
 
-## ⚠️ Known Limitations & Future Improvements
+##  Known Limitations & Future Improvements
 
 - **Database**: Currently uses CSV files. Migration to PostgreSQL/MySQL with SQLAlchemy is recommended for production.
 - **Password Hashing**: Implement `bcrypt` or `werkzeug.security` for proper password security.
